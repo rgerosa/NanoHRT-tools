@@ -244,6 +244,16 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.branch(prefix + "sj2_nbhadrons", "I")
                 self.out.branch(prefix + "sj2_nchadrons", "I")
                 self.out.branch(prefix + "sj2_partonflavour", "I")
+            # bb/cc hadron
+            if self.isMC and idx==2:
+                for hadtype in ['b', 'c']:
+                    for hadidx in [1, 2]:
+                        self.out.branch(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), "F")
+                        self.out.branch(prefix + "gen{}hadron{}_eta".format(hadtype, hadidx), "F")
+                        self.out.branch(prefix + "gen{}hadron{}_phi".format(hadtype, hadidx), "F")
+                        self.out.branch(prefix + "gen{}hadron{}_mass".format(hadtype, hadidx), "F")
+                        self.out.branch(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), "I")
+
 
     def correctJetsAndMET(self, event):
         # correct Jets and MET
@@ -387,6 +397,23 @@ class HeavyFlavBaseProducer(Module, object):
         for gp in itertools.chain(event.hadGenTops, event.hadGenWs, event.hadGenZs, event.hadGenHs):
             addDaughters(gp)
 
+        # bb/cc matching
+        # FIXME: only available for qcd & ggh(cc/bb) sample
+        probe_fj = event.fatjets[1]
+        probe_fj.genBhadron, probe_fj.genChadron = [], []
+        for gp in genparts:
+            if gp.pdgId in [5, -5] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                if len(probe_fj.genBhadron)==0 or (len(probe_fj.genBhadron)>0 and gp.genPartIdxMother==probe_fj.genBhadron[0].genPartIdxMother):
+                    probe_fj.genBhadron.append(gp)
+            if gp.pdgId in [4, -4] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                if len(probe_fj.genChadron)==0 or (len(probe_fj.genChadron)>0 and gp.genPartIdxMother==probe_fj.genChadron[0].genPartIdxMother):
+                    probe_fj.genChadron.append(gp)
+        probe_fj.genBhadron.sort(key=lambda x: x.pt, reverse=True)
+        probe_fj.genChadron.sort(key=lambda x: x.pt, reverse=True)
+        # null padding
+        probe_fj.genBhadron += [_NullObject() for _ in range(2-len(probe_fj.genBhadron))]
+        probe_fj.genChadron += [_NullObject() for _ in range(2-len(probe_fj.genChadron))]
+
     def fillBaseEventInfo(self, event):
 
         self.out.fillBranch("jetR", self._jetConeSize)
@@ -454,6 +481,17 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "H_dau_pdgid", abs(h.daughters[0].pdgId) if h else 0)
                 self.out.fillBranch(prefix + "dr_Z", dr_z)
                 self.out.fillBranch(prefix + "Z_dau_pdgid", abs(z.daughters[0].pdgId) if z else 0)
+
+            if self.isMC and idx==2:
+                for hadtype in ['b', 'c']:
+                    for hadidx in [1, 2]:
+                        gp = fj.genBhadron[hadidx - 1] if hadtype=='b' else fj.genChadron[hadidx - 1]
+                        fill_gp = self._get_filler(gp)  # wrapper, fill default value if sv=None
+                        fill_gp(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), gp.pt)
+                        fill_gp(prefix + "gen{}hadron{}_eta".format(hadtype, hadidx), gp.eta)
+                        fill_gp(prefix + "gen{}hadron{}_phi".format(hadtype, hadidx), gp.phi)
+                        fill_gp(prefix + "gen{}hadron{}_mass".format(hadtype, hadidx), gp.mass)
+                        fill_gp(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), gp.pdgId)
 
             try:
                 self.out.fillBranch(prefix + "DeepAK8MD_ZHbbvsQCD", fj.deepTagMD_ZHbbvsQCD)
