@@ -184,55 +184,65 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "tau21", "F")
             self.out.branch(prefix + "btagcsvv2", "F")
             self.out.branch(prefix + "btagjp", "F")
-            self.out.branch(prefix + "nsv", "I")
-            self.out.branch(prefix + "nsv_ptgt25", "I")
-            self.out.branch(prefix + "nsv_ptgt50", "I")
-            self.out.branch(prefix + "ntracks", "I")
-            self.out.branch(prefix + "ntracks_sv12", "I")
+            for svname in ['', 'medium', 'tight']:
+                self.out.branch(prefix + "n{}sv".format(svname), "I")
+                self.out.branch(prefix + "n{}sv_ptgt25".format(svname), "I")
+                self.out.branch(prefix + "n{}sv_ptgt50".format(svname), "I")
+                self.out.branch(prefix + "n{}tracks".format(svname), "I")
+                self.out.branch(prefix + "n{}tracks_sv12".format(svname), "I")
             self.out.branch(prefix + "deltaR_sj12", "F")
+            
             # subjet #1
             self.out.branch(prefix + "sj1_pt", "F")
             self.out.branch(prefix + "sj1_eta", "F")
             self.out.branch(prefix + "sj1_phi", "F")
             self.out.branch(prefix + "sj1_rawmass", "F")
             self.out.branch(prefix + "sj1_energy", "F")
+            self.out.branch(prefix + "sj1_tau21", "F")
             self.out.branch(prefix + "sj1_btagdeepcsv", "F")
             self.out.branch(prefix + "sj1_btagcsvv2", "F")
             self.out.branch(prefix + "sj1_btagjp", "F")
-            self.out.branch(prefix + "sj1_ntracks", "I")
-            self.out.branch(prefix + "sj1_nsv", "I")
-            self.out.branch(prefix + "sj1_sv1_pt", "F")
-            self.out.branch(prefix + "sj1_sv1_mass", "F")
-            self.out.branch(prefix + "sj1_sv1_masscor", "F")
-            self.out.branch(prefix + "sj1_sv1_ntracks", "I")
-            self.out.branch(prefix + "sj1_sv1_dxy", "F")
-            self.out.branch(prefix + "sj1_sv1_dxysig", "F")
-            self.out.branch(prefix + "sj1_sv1_dlen", "F")
-            self.out.branch(prefix + "sj1_sv1_dlensig", "F")
-            self.out.branch(prefix + "sj1_sv1_chi2ndof", "F")
-            self.out.branch(prefix + "sj1_sv1_pangle", "F")
+            for svname in ['', 'medium', 'tight']:
+                self.out.branch(prefix + "sj1_n{}tracks".format(svname), "I")
+                self.out.branch(prefix + "sj1_n{}sv".format(svname), "I")
+                self.out.branch(prefix + "sj1_{}sv1_pt".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_mass".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_masscor".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_ntracks".format(svname), "I")
+                self.out.branch(prefix + "sj1_{}sv1_dxy".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_dxysig".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_dlen".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_dlensig".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_chi2ndof".format(svname), "F")
+                self.out.branch(prefix + "sj1_{}sv1_pangle".format(svname), "F")
             # subjet #2
             self.out.branch(prefix + "sj2_pt", "F")
             self.out.branch(prefix + "sj2_eta", "F")
             self.out.branch(prefix + "sj2_phi", "F")
             self.out.branch(prefix + "sj2_rawmass", "F")
             self.out.branch(prefix + "sj2_energy", "F")
+            self.out.branch(prefix + "sj2_tau21", "F")
             self.out.branch(prefix + "sj2_btagdeepcsv", "F")
             self.out.branch(prefix + "sj2_btagcsvv2", "F")
             self.out.branch(prefix + "sj2_btagjp", "F")
-            self.out.branch(prefix + "sj2_ntracks", "I")
-            self.out.branch(prefix + "sj2_nsv", "I")
-            self.out.branch(prefix + "sj2_sv1_pt", "F")
-            self.out.branch(prefix + "sj2_sv1_mass", "F")
-            self.out.branch(prefix + "sj2_sv1_masscor", "F")
-            self.out.branch(prefix + "sj2_sv1_ntracks", "I")
-            self.out.branch(prefix + "sj2_sv1_dxy", "F")
-            self.out.branch(prefix + "sj2_sv1_dxysig", "F")
-            self.out.branch(prefix + "sj2_sv1_dlen", "F")
-            self.out.branch(prefix + "sj2_sv1_dlensig", "F")
-            self.out.branch(prefix + "sj2_sv1_chi2ndof", "F")
-            self.out.branch(prefix + "sj2_sv1_pangle", "F")
-            self.out.branch(prefix + "sj12_masscor_dxysig", "F")
+            for svname in ['', 'medium', 'tight']:
+                self.out.branch(prefix + "sj2_n{}tracks".format(svname), "I")
+                self.out.branch(prefix + "sj2_n{}sv".format(svname), "I")
+                self.out.branch(prefix + "sj2_{}sv1_pt".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_mass".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_masscor".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_ntracks".format(svname), "I")
+                self.out.branch(prefix + "sj2_{}sv1_dxy".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_dxysig".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_dlen".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_dlensig".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_chi2ndof".format(svname), "F")
+                self.out.branch(prefix + "sj2_{}sv1_pangle".format(svname), "F")
+            for svname in ['', 'medium', 'tight']:
+                self.out.branch(prefix + "sj12_{}sv_masscor_dxysig".format(svname), "F")
+            
+            # again match ak15 jets to ak8/ak4 jets for more information
+            
             # matching variables
             if self.isMC:
                 self.out.branch(prefix + "nbhadrons", "I")
@@ -467,6 +477,25 @@ class HeavyFlavBaseProducer(Module, object):
             if deltaR(sv, fj) < self._jetConeSize:
                 fj.sv_list.append(sv)
 
+    def ret_matchSVToSubjets(self, vertices, fj):
+        assert(len(fj.subjets) == 2)
+        drcut = min(0.4, 0.5 * deltaR(*fj.subjets))
+        sj_sv_list = ([], [])
+        for isj, sj in enumerate(fj.subjets):
+            for sv in vertices:
+                if deltaR(sv, sj) < drcut:
+                    sj_sv_list[isj].append(sv)
+        return sj_sv_list
+
+    def ret_matchSVToFatjet(self, vertices, fj):
+        if 'sv_list' in fj.__dict__:
+            return
+        sv_list = []
+        for sv in vertices:
+            if deltaR(sv, fj) < self._jetConeSize:
+                sv_list.append(sv)
+        return sv_list
+
     def fillFatJetInfo(self, event):
         self.out.fillBranch("n_fatjet", len(event.fatjets))
         
@@ -532,31 +561,37 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.fillBranch(prefix + "rawmass", fj.mass)
             self.out.fillBranch(prefix + "sdmass", fj.msoftdrop)
             self.out.fillBranch(prefix + "tau21", fj.tau2 / fj.tau1 if fj.tau1 > 0 else 99)
+#             self.out.fillBranch(prefix + "tau42", fj.tau4 / fj.tau2 if fj.tau2 > 0 else 99) # Ak15Puppi only has tau1/2/3
             self.out.fillBranch(prefix + "btagcsvv2", fj.btagCSVV2)
             try:
                 self.out.fillBranch(prefix + "btagjp", fj.btagJP)
             except RuntimeError:
                 self.out.fillBranch(prefix + "btagjp", -1)
+            
+            fj.secondary_vertices = self.ret_matchSVToFatjet(event.secondary_vertices, fj)
+            fj.medium_secondary_vertices = self.ret_matchSVToFatjet(event.medium_secondary_vertices, fj)
+            fj.tight_secondary_vertices = self.ret_matchSVToFatjet(event.tight_secondary_vertices, fj)
+            for svname in ['', 'medium', 'tight']:
+                attrname = ('' if svname=='' else (svname+'_') ) + 'secondary_vertices'
+                nsv_ptgt25_   = 0
+                nsv_ptgt50_   = 0
+                ntracks_      = 0
+                ntracks_sv12_ = 0
+                for isv, sv in enumerate(getattr(fj, attrname)):
+                    ntracks_ += sv.ntracks
+                    if isv<2:
+                        ntracks_sv12_ += sv.ntracks
+                    if sv.pt>25.:
+                        nsv_ptgt25_ += 1
+                    if sv.pt>50.:
+                        nsv_ptgt50_ += 1 
+                self.out.fillBranch(prefix + "n{}sv".format(svname), len(getattr(fj, attrname)))
+                self.out.fillBranch(prefix + "n{}sv_ptgt25".format(svname)   , nsv_ptgt25_)
+                self.out.fillBranch(prefix + "n{}sv_ptgt50".format(svname)   , nsv_ptgt50_)
+                self.out.fillBranch(prefix + "n{}tracks".format(svname)      , ntracks_)
+                self.out.fillBranch(prefix + "n{}tracks_sv12".format(svname) , ntracks_sv12_)
 
-            self._matchSVToFatjet(event, fj)
-            nsv_ptgt25_   = 0
-            nsv_ptgt50_   = 0
-            ntracks_      = 0
-            ntracks_sv12_ = 0
-            for isv, sv in enumerate(fj.sv_list):
-                ntracks_ += sv.ntracks
-                if isv<3:
-                    ntracks_sv12_ += sv.ntracks
-                if sv.pt>25.:
-                    nsv_ptgt25_ += 1
-                if sv.pt>50.:
-                    nsv_ptgt50_ += 1 
-            self.out.fillBranch(prefix + "nsv", len(fj.sv_list))
-            self.out.fillBranch(prefix + "nsv_ptgt25"   , nsv_ptgt25_)
-            self.out.fillBranch(prefix + "nsv_ptgt50"   , nsv_ptgt50_)
-            self.out.fillBranch(prefix + "ntracks"      , ntracks_)
-            self.out.fillBranch(prefix + "ntracks_sv12" , ntracks_sv12_)
-
+            # start subjet
             assert(len(fj.subjets) == 2)
             self.out.fillBranch(prefix + "deltaR_sj12", deltaR(*fj.subjets[:2]))
             for idx_sj, sj in enumerate(fj.subjets):
@@ -566,6 +601,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix_sj + "phi", sj.phi)
                 self.out.fillBranch(prefix_sj + "energy", sj.p4().E())
                 self.out.fillBranch(prefix_sj + "rawmass", sj.mass)
+                self.out.fillBranch(prefix_sj + "tau21", sj.tau2 / sj.tau1 if sj.tau1 > 0 else 99)
                 self.out.fillBranch(prefix_sj + "btagcsvv2", sj.btagCSVV2)
                 try:
                     self.out.fillBranch(prefix_sj + "btagdeepcsv", sj.btagDeepB)
@@ -576,29 +612,37 @@ class HeavyFlavBaseProducer(Module, object):
                 except RuntimeError:
                     self.out.fillBranch(prefix_sj + "btagjp", -1)
 
-                self.out.fillBranch(prefix_sj + "ntracks" , sum([sv.ntracks for sv in sj.sv_list]))
-                self.out.fillBranch(prefix_sj + "nsv", len(sj.sv_list))
-                sv = sj.sv_list[0] if len(sj.sv_list) else _NullObject()
-                fill_sv = self._get_filler(sv)  # wrapper, fill default value if sv=None
-                fill_sv(prefix_sj + "sv1_pt", sv.pt)
-                fill_sv(prefix_sj + "sv1_mass", sv.mass)
-                fill_sv(prefix_sj + "sv1_masscor", corrected_svmass(sv) if sv else 0)
-                fill_sv(prefix_sj + "sv1_ntracks", sv.ntracks)
-                fill_sv(prefix_sj + "sv1_dxy", sv.dxy)
-                fill_sv(prefix_sj + "sv1_dxysig", sv.dxySig)
-                fill_sv(prefix_sj + "sv1_dlen", sv.dlen)
-                fill_sv(prefix_sj + "sv1_dlensig", sv.dlenSig)
-                fill_sv(prefix_sj + "sv1_chi2ndof", sv.chi2)
-                fill_sv(prefix_sj + "sv1_pangle", sv.pAngle)
+                for svname in ['', 'medium', 'tight']:
+                    attrname = ('' if svname=='' else (svname+'_') ) + 'secondary_vertices'
+                    self.out.fillBranch(prefix_sj + "n{}tracks".format(svname) , sum([sv.ntracks for sv in getattr(sj, attrname)]))
+                    self.out.fillBranch(prefix_sj + "n{}sv".format(svname), len(getattr(sj, attrname)))
+                    sv = getattr(sj, attrname)[0] if len(getattr(sj, attrname)) else _NullObject()
+                    fill_sv = self._get_filler(sv)  # wrapper, fill default value if sv=None
+                    fill_sv(prefix_sj + "{}sv1_pt".format(svname), sv.pt)
+                    fill_sv(prefix_sj + "{}sv1_mass".format(svname), sv.mass)
+                    fill_sv(prefix_sj + "{}sv1_masscor".format(svname), corrected_svmass(sv) if sv else 0)
+                    fill_sv(prefix_sj + "{}sv1_ntracks".format(svname), sv.ntracks)
+                    fill_sv(prefix_sj + "{}sv1_dxy".format(svname), sv.dxy)
+                    fill_sv(prefix_sj + "{}sv1_dxysig".format(svname), sv.dxySig)
+                    fill_sv(prefix_sj + "{}sv1_dlen".format(svname), sv.dlen)
+                    fill_sv(prefix_sj + "{}sv1_dlensig".format(svname), sv.dlenSig)
+                    fill_sv(prefix_sj + "{}sv1_chi2ndof".format(svname), sv.chi2)
+                    fill_sv(prefix_sj + "{}sv1_pangle".format(svname), sv.pAngle)
 
             sj1, sj2 = fj.subjets
-            try:
-                sv1, sv2 = sj1.sv_list[0], sj2.sv_list[0]
-                sv = sv1 if sv1.dxySig > sv2.dxySig else sv2
-                self.out.fillBranch(prefix + "sj12_masscor_dxysig", corrected_svmass(sv) if sv else 0)
-            except IndexError:
-                # if len(sv_list) == 0
-                self.out.fillBranch(prefix + "sj12_masscor_dxysig", 0)
+            for svname in ['', 'medium', 'tight']:
+                attrname = ('' if svname=='' else (svname+'_') ) + 'secondary_vertices'
+                try:
+                    sv1, sv2 = getattr(sj1, attrname)[0], getattr(sj2, attrname)[0]
+                    sv = sv1 if sv1.dxySig > sv2.dxySig else sv2
+                    self.out.fillBranch(prefix + "sj12_{}sv_masscor_dxysig".format(svname), corrected_svmass(sv) if sv else 0)
+                except IndexError:
+                    # if len(sv_list) == 0
+                    self.out.fillBranch(prefix + "sj12_{}sv_masscor_dxysig".format(svname), 0)
+
+                    
+            # again match ak15 jets to ak8 subjets for more information
+
 
             # matching variables
             if self.isMC:

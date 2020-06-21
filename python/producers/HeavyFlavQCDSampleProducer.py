@@ -54,29 +54,37 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         ## selection on SV
         event._allSV = Collection(event, "SV")
-        event.secondary_vertices = []
+        event.secondary_vertices, event.medium_secondary_vertices, event.tight_secondary_vertices = [], [], []
         for sv in event._allSV:
-#             if sv.ntracks > 2 and abs(sv.dxy) < 3. and sv.dlenSig > 4:
-#             if sv.dlenSig > 4:
+            if sv.ntracks > 2 and abs(sv.dxy) < 3. and sv.dlenSig > 4:
+                event.tight_secondary_vertices.append(sv)
+            if sv.dlenSig > 4:
+                event.medium_secondary_vertices.append(sv)
             if True:
                 event.secondary_vertices.append(sv)
         if len(event.secondary_vertices) < 2:
             return False
         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
 #         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x : x.dxySig, reverse=True)  # sort by dxysig
+        event.medium_secondary_vertices = sorted(event.medium_secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
+        event.tight_secondary_vertices = sorted(event.tight_secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
 
         # selection on the probe jet (sub-leading in pT)
         probe_fj = event.fatjets[1]
         if not (len(probe_fj.subjets) == 2 and probe_fj.msoftdrop > 50 and probe_fj.msoftdrop < 200):
             return False
-        # require at least 1 SV matched to each subjet
-        self.matchSVToSubjets(event, probe_fj)
-#         if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
-#             return False
+        # require at least 1 SV matched to each subjet (delete this requirement)
+        probe_fj.subjets[0].secondary_vertices, probe_fj.subjets[1].secondary_vertices = self.ret_matchSVToSubjets(event.secondary_vertices, probe_fj)
+        probe_fj.subjets[0].medium_secondary_vertices, probe_fj.subjets[1].medium_secondary_vertices = self.ret_matchSVToSubjets(event.medium_secondary_vertices, probe_fj)
+        probe_fj.subjets[0].tight_secondary_vertices, probe_fj.subjets[1].tight_secondary_vertices = self.ret_matchSVToSubjets(event.tight_secondary_vertices, probe_fj)
+
         # match SV also to the leading jet
+        leading_fj = event.fatjets[0]
         if not (len(event.fatjets[0].subjets) == 2):
             return False
-        self.matchSVToSubjets(event, event.fatjets[0])
+        leading_fj.subjets[0].secondary_vertices, leading_fj.subjets[1].secondary_vertices = self.ret_matchSVToSubjets(event.secondary_vertices, leading_fj)
+        leading_fj.subjets[0].medium_secondary_vertices, leading_fj.subjets[1].medium_secondary_vertices = self.ret_matchSVToSubjets(event.medium_secondary_vertices, leading_fj)
+        leading_fj.subjets[0].tight_secondary_vertices, leading_fj.subjets[1].tight_secondary_vertices = self.ret_matchSVToSubjets(event.tight_secondary_vertices, leading_fj)
 
         # load gen
         self.loadGenHistory(event)
