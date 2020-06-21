@@ -71,8 +71,8 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
             return False
         # require at least 1 SV matched to each subjet
         self.matchSVToSubjets(event, probe_fj)
-        if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
-            return False
+#         if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
+#             return False
         # match SV also to the leading jet
         if not (len(event.fatjets[0].subjets) == 2):
             return False
