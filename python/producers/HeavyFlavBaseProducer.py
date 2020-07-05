@@ -255,7 +255,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.branch(prefix + "sj2_nchadrons", "I")
                 self.out.branch(prefix + "sj2_partonflavour", "I")
             # bb/cc hadron
-            if self.isMC and idx==2:
+            if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
                 for hadtype in ['b', 'c']:
                     for hadidx in [1, 2]:
                         self.out.branch(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), "F")
@@ -421,7 +421,7 @@ class HeavyFlavBaseProducer(Module, object):
 
         # bb/cc matching
         # FIXME: only available for qcd & ggh(cc/bb) sample
-        probe_fj = event.fatjets[1]
+        probe_fj = event.fatjets[1 if self._channel == 'qcd' else 0]
         probe_fj.genBhadron, probe_fj.genChadron = [], []
         for gp in genparts:
             if gp.pdgId in [5, -5] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
@@ -437,7 +437,7 @@ class HeavyFlavBaseProducer(Module, object):
         probe_fj.genChadron += [_NullObject() for _ in range(2-len(probe_fj.genChadron))]
         
         # last parton information
-        for ifj in range(2):
+        for ifj in range(2 if self._channel == 'qcd' else 1):
             fj = event.fatjets[ifj]
             fj.npart, fj.nbpart, fj.ncpart, fj.ngpart, fj.part_sumpt, fj.bpart_sumpt, fj.cpart_sumpt, fj.gpart_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
             fj.npart50, fj.nbpart50, fj.ncpart50, fj.ngpart50, fj.part50_sumpt, fj.bpart50_sumpt, fj.cpart50_sumpt, fj.gpart50_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
@@ -547,7 +547,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "dr_Z", dr_z)
                 self.out.fillBranch(prefix + "Z_dau_pdgid", abs(z.daughters[0].pdgId) if z else 0)
 
-            if self.isMC and idx==2:
+            if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
                 for hadtype in ['b', 'c']:
                     for hadidx in [1, 2]:
                         gp = fj.genBhadron[hadidx - 1] if hadtype=='b' else fj.genChadron[hadidx - 1]
