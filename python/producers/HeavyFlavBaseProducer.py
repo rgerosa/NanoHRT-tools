@@ -210,6 +210,9 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "sj1_ntracks", "I")
             self.out.branch(prefix + "sj1_nsv", "I")
             self.out.branch(prefix + "sj1_sv1_pt", "F")
+            self.out.branch(prefix + "sj1_sv1_eta", "F")
+            self.out.branch(prefix + "sj1_sv1_phi", "F")
+            self.out.branch(prefix + "sj1_sv1_energy", "F")
             self.out.branch(prefix + "sj1_sv1_mass", "F")
             self.out.branch(prefix + "sj1_sv1_masscor", "F")
             self.out.branch(prefix + "sj1_sv1_ntracks", "I")
@@ -231,6 +234,9 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "sj2_ntracks", "I")
             self.out.branch(prefix + "sj2_nsv", "I")
             self.out.branch(prefix + "sj2_sv1_pt", "F")
+            self.out.branch(prefix + "sj2_sv1_eta", "F")
+            self.out.branch(prefix + "sj2_sv1_phi", "F")
+            self.out.branch(prefix + "sj2_sv1_energy", "F")
             self.out.branch(prefix + "sj2_sv1_mass", "F")
             self.out.branch(prefix + "sj2_sv1_masscor", "F")
             self.out.branch(prefix + "sj2_sv1_ntracks", "I")
@@ -241,6 +247,8 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "sj2_sv1_chi2ndof", "F")
             self.out.branch(prefix + "sj2_sv1_pangle", "F")
             self.out.branch(prefix + "sj12_masscor_dxysig", "F")
+            self.out.branch(prefix + "sj12_sv1_mass", "F")
+            self.out.branch(prefix + "sj12_sv1_z", "F")
             # sfBDT
             self.out.branch(prefix + "sfBDT", "F")
             # matching variables
@@ -553,6 +561,9 @@ class HeavyFlavBaseProducer(Module, object):
                 sv = sj.sv_list[0] if len(sj.sv_list) else _NullObject()
                 fill_sv = self._get_filler(sv)  # wrapper, fill default value if sv=None
                 fill_sv(prefix_sj + "sv1_pt", sv.pt)
+                fill_sv(prefix_sj + "sv1_eta", sv.eta)
+                fill_sv(prefix_sj + "sv1_phi", sv.phi)
+                fill_sv(prefix_sj + "sv1_energy", sv.p4().E() if sv else 0)
                 fill_sv(prefix_sj + "sv1_mass", sv.mass)
                 fill_sv(prefix_sj + "sv1_masscor", corrected_svmass(sv) if sv else 0)
                 fill_sv(prefix_sj + "sv1_ntracks", sv.ntracks)
@@ -566,11 +577,16 @@ class HeavyFlavBaseProducer(Module, object):
             sj1, sj2 = fj.subjets
             try:
                 sv1, sv2 = sj1.sv_list[0], sj2.sv_list[0]
-                sv = sv1 if sv1.dxySig > sv2.dxySig else sv2
-                self.out.fillBranch(prefix + "sj12_masscor_dxysig", corrected_svmass(sv) if sv else 0)
+                sva, svb = (sv1, sv2) if sv1.dxySig > sv2.dxySig else (sv2, sv1)
+                sv12_mass = (sv1.p4()+sv2.p4()).M()
+                self.out.fillBranch(prefix + "sj12_masscor_dxysig", corrected_svmass(sva) if sva else 0)
+                self.out.fillBranch(prefix + "sj12_sv1_mass", sv12_mass)
+                self.out.fillBranch(prefix + "sj12_sv1_z", deltaR(sv1, sv2) * svb.pt / sv12_mass)
             except IndexError:
                 # if len(sv_list) == 0
                 self.out.fillBranch(prefix + "sj12_masscor_dxysig", 0)
+                self.out.fillBranch(prefix + "sj12_sv1_mass", 0)
+                self.out.fillBranch(prefix + "sj12_sv1_z", 0)
 
             # sfBDT
             sfbdt_inputs = {k: self.out._branches[k.replace('fj_2_', prefix)].buff[0] for k in self._sfbdt_vars}
