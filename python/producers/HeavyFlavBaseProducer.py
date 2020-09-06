@@ -442,7 +442,7 @@ class HeavyFlavBaseProducer(Module, object):
             fj.npart, fj.nbpart, fj.ncpart, fj.ngpart, fj.part_sumpt, fj.bpart_sumpt, fj.cpart_sumpt, fj.gpart_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
             fj.npart50, fj.nbpart50, fj.ncpart50, fj.ngpart50, fj.part50_sumpt, fj.bpart50_sumpt, fj.cpart50_sumpt, fj.gpart50_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
             for gp in genparts:
-                if gp.status>70 and gp.status<80 and (gp.statusFlags & (1 << 13)) and gp.pt>=15 and deltaR(gp, fj)<=self._jetConeSize:
+                if gp.status>70 and gp.status<80 and (gp.statusFlags & (1 << 13)) and abs(gp.pdgId) in [1,2,3,4,5,6,21] and gp.pt>=5 and deltaR(gp, fj)<=self._jetConeSize:
                     fj.npart += 1; fj.part_sumpt += gp.pt
                     if gp.pdgId in [5, -5]:
                         fj.nbpart += 1; fj.bpart_sumpt += gp.pt
