@@ -62,8 +62,9 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
                 event.medium_secondary_vertices.append(sv)
             if True:
                 event.secondary_vertices.append(sv)
-        if len(event.secondary_vertices) < 2:
-            return False
+        ### now we no longer requires two SVs ###
+#         if len(event.secondary_vertices) < 2:
+#             return False
         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
 #         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x : x.dxySig, reverse=True)  # sort by dxysig
         event.medium_secondary_vertices = sorted(event.medium_secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
