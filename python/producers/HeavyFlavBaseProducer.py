@@ -163,7 +163,7 @@ class HeavyFlavBaseProducer(Module, object):
 
         # Large-R jets
         self.out.branch("n_fatjet", "I")
-        for idx in ([1, 2] if self._channel == 'qcd' else [1]):
+        for idx in ([1, 2, 3] if self._channel == 'qcd' else [1]):
             prefix = 'fj_%d_' % idx
 
             # tagger
@@ -453,7 +453,13 @@ class HeavyFlavBaseProducer(Module, object):
     def fillFatJetInfo(self, event):
         self.out.fillBranch("n_fatjet", len(event.fatjets))
         
-        for idx in ([1, 2] if self._channel == 'qcd' else [1]):
+        for idx in ([1, 2, 3] if self._channel == 'qcd' else [1]):
+            if self._channel == 'qcd' and ((idx == 2 and event.is_fj_qualified[0] == False) or (idx == 3 and event.is_fj_qualified[1] == False)):
+                fj_branches = [b for b in self.out._branches.keys() if b.startswith('fj_%d_' % idx)]
+                for b in fj_branches:
+                    self.out.fillBranch(b, 0)
+                continue
+
             prefix = 'fj_%d_' % idx
             fj = event.fatjets[idx - 1]
 

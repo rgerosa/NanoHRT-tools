@@ -28,6 +28,9 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
         self.out.branch("ht", "F")
         self.out.branch("nlep", "I")
 
+        self.out.branch("fj_2_is_qualified", "O")
+        self.out.branch("fj_3_is_qualified", "O")
+
     def prepareEvent(self, event):
 
         logging.debug('processing event %d' % event.event)
@@ -65,18 +68,28 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x: x.pt, reverse=True)  # sort by pt
 #         event.secondary_vertices = sorted(event.secondary_vertices, key=lambda x : x.dxySig, reverse=True)  # sort by dxysig
 
-        # selection on the probe jet (sub-leading in pT)
-        probe_fj = event.fatjets[1]
-        if not (len(probe_fj.subjets) == 2 and probe_fj.msoftdrop > 50 and probe_fj.msoftdrop < 200):
-            return False
-        # require at least 1 SV matched to each subjet
-        self.matchSVToSubjets(event, probe_fj)
-        if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
-            return False
-        # match SV also to the leading jet
+        # match SV to the leading jet
         if not (len(event.fatjets[0].subjets) == 2):
             return False
         self.matchSVToSubjets(event, event.fatjets[0])
+
+        # selection on the probe jet (sub-leading or sub-sub-leading in pT)
+        event.is_fj_qualified = [True, True]
+        for idx in [1, 2]: # index for probe jet
+            if len(event.fatjets) <= idx:
+                event.is_fj_qualified[idx - 1] = False
+                continue
+            probe_fj = event.fatjets[idx]
+            if not (len(probe_fj.subjets) == 2 and probe_fj.msoftdrop > 50 and probe_fj.msoftdrop < 200):
+                event.is_fj_qualified[idx - 1] = False
+                continue
+            # require at least 1 SV matched to each subjet
+            self.matchSVToSubjets(event, probe_fj)
+            if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
+                event.is_fj_qualified[idx - 1] = False
+
+        if any(event.is_fj_qualified) == False:
+            return False
 
         # load gen
         self.loadGenHistory(event)
@@ -99,6 +112,9 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
             self.out.fillBranch("passHTTrig", event.HLT_PFHT1050)
         self.out.fillBranch("ht", event.ht)
         self.out.fillBranch("nlep", len(event.looseLeptons))
+
+        self.out.fillBranch("fj_2_is_qualified", event.is_fj_qualified[0])
+        self.out.fillBranch("fj_3_is_qualified", event.is_fj_qualified[1])
 
         self.fillBaseEventInfo(event)
         self.fillFatJetInfo(event)
