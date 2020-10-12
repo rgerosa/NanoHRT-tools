@@ -454,6 +454,12 @@ class HeavyFlavBaseProducer(Module, object):
         self.out.fillBranch("n_fatjet", len(event.fatjets))
         
         for idx in ([1, 2] if self._channel == 'qcd' else [1]):
+            if self._channel == 'qcd' and event.is_fj_qualified[idx-1] == False:
+                fj_branches = [b for b in self.out._branches.keys() if b.startswith('fj_%d_' % idx)]
+                for b in fj_branches:
+                    self.out.fillBranch(b, 0)
+                continue
+
             prefix = 'fj_%d_' % idx
             fj = event.fatjets[idx - 1]
 
@@ -573,7 +579,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "sj12_masscor_dxysig", 0)
 
             # sfBDT
-            self.out.fillBranch(prefix + "sfBDT", self.sfbdt)
+            self.out.fillBranch(prefix + "sfBDT", fj.sfbdt)
 
             # matching variables
             if self.isMC:
