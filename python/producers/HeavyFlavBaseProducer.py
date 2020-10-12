@@ -573,8 +573,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "sj12_masscor_dxysig", 0)
 
             # sfBDT
-            sfbdt_inputs = {k: self.out._branches[k.replace('fj_2_', prefix)].buff[0] for k in self._sfbdt_vars}
-            self.out.fillBranch(prefix + "sfBDT", self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10)))
+            self.out.fillBranch(prefix + "sfBDT", self.sfbdt)
 
             # matching variables
             if self.isMC:

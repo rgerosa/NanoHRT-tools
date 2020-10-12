@@ -40,7 +40,7 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
             event.ak4jets.append(j)
 
         event.ht = sum([j.pt for j in event.ak4jets])
-        if event.ht < 1000.:
+        if event.ht < 400.:
             return False
 
         ## selection on AK8 jets
@@ -73,6 +73,20 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
         self.matchSVToSubjets(event, probe_fj)
         if len(probe_fj.subjets[0].sv_list) == 0 or len(probe_fj.subjets[1].sv_list) == 0:
             return False
+        # filter low sfBDT events
+        self._matchSVToFatjet(event, probe_fj)
+        sfbdt_input_vals = {
+            'fj_2_tau21': probe_fj.tau2 / probe_fj.tau1 if probe_fj.tau1 > 0 else 99,
+            'fj_2_sj1_rawmass': probe_fj.subjets[0].mass,
+            'fj_2_sj2_rawmass': probe_fj.subjets[1].mass,
+            'fj_2_ntracks_sv12': sum([sv.ntracks for isv, sv in enumerate(probe_fj.sv_list) if isv<2]),
+            'fj_2_sj1_sv1_pt': probe_fj.subjets[0].sv_list[0].pt,
+            'fj_2_sj2_sv1_pt': probe_fj.subjets[1].sv_list[0].pt,
+        }
+        self.sfbdt = self.xgb.eval(sfbdt_input_vals, model_idx=(event.event % 10))
+        if self.sfbdt < 0.5:
+            return False
+
         # match SV also to the leading jet
         if not (len(event.fatjets[0].subjets) == 2):
             return False
