@@ -193,6 +193,11 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "sj2_phi", "F")
             self.out.branch(prefix + "sj2_rawmass", "F")
             self.out.branch(prefix + "sj2_btagdeepcsv", "F")
+            self.out.branch(prefix + "sj1_matchallmu", "I")
+            self.out.branch(prefix + "sj2_matchallmu", "I")
+            self.out.branch(prefix + "sj1_matchloosemu", "I")
+            self.out.branch(prefix + "sj2_matchloosemu", "I")
+            
 
             # taggers
             self.out.branch(prefix + "DeepAK8_TvsQCD", "F")
@@ -627,6 +632,8 @@ class HeavyFlavBaseProducer(Module, object):
                     self.out.fillBranch(prefix_sj + "btagdeepcsv", sj.btagDeepB)
                 except RuntimeError:
                     self.out.fillBranch(prefix_sj + "btagdeepcsv", -1)
+                self.out.fillBranch(prefix_sj + "matchallmu", sj.matchAllMuons)
+                self.out.fillBranch(prefix_sj + "matchloosemu", sj.matchLooseMuons)
 
             # taggers
             try:

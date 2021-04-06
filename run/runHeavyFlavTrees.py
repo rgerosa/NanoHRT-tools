@@ -212,15 +212,15 @@ def main():
                 if cat == 'data':
                     opts.run_data = True
                     opts.nfiles_per_job *= 2
-                opts.inputdir = opts.inputdir.rstrip('/').replace('_YEAR_', year)
-                assert(year in opts.inputdir)
-                if opts.inputdir.rsplit('/', 1)[1] not in ['data', 'mc']:
-                    opts.inputdir = os.path.join(opts.inputdir, cat)
-                assert(opts.inputdir.endswith(cat))
+#                 opts.inputdir = opts.inputdir.rstrip('/').replace('_YEAR_', year)
+#                 assert(year in opts.inputdir)
+#                 if opts.inputdir.rsplit('/', 1)[1] not in ['data', 'mc']:
+#                     opts.inputdir = os.path.join(opts.inputdir, cat)
+#                 assert(opts.inputdir.endswith(cat))
                 opts.year = year
                 opts.channel = chn
-                logging.info('inputdir=%s, year=%s, channel=%s, cat=%s, syst=%s', opts.inputdir, opts.year,
-                             opts.channel, 'data' if opts.run_data else 'mc', 'syst' if opts.run_syst else 'none')
+#                 logging.info('inputdir=%s, year=%s, channel=%s, cat=%s, syst=%s', opts.inputdir, opts.year,
+#                              opts.channel, 'data' if opts.run_data else 'mc', 'syst' if opts.run_syst else 'none')
                 _process(opts)
 
 

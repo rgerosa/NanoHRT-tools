@@ -1,7 +1,7 @@
 from PhysicsTools.NanoAODTools.postprocessing.framework.datamodel import Collection
 
 from .HeavyFlavBaseProducer import HeavyFlavBaseProducer
-
+from ..helpers.utils import deltaR, polarP4
 
 class QCDSampleProducer(HeavyFlavBaseProducer):
 
@@ -19,6 +19,11 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         self.selectLeptons(event)
         self.correctJetsAndMET(event)
+        self._allMuons = Collection(event, "Muon")
+        self._allMuonsLooseFlag = [
+            mu.pt > 10 and abs(mu.eta) < 2.4 and abs(mu.dxy) < 0.05 and abs(mu.dz) < 0.2 \
+            and mu.looseId and mu.miniPFRelIso_all < 0.4 for mu in self._allMuons
+        ]
 
         if len(event.fatjets) < 2:
             return False
@@ -38,6 +43,15 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
                 if fj.sfBDT < self._opts['sfbdt_threshold']:
                     fj.is_qualified = False
                     continue
+                
+                drcut = min(0.4, 0.5 * deltaR(*fj.subjets)) if len(fj.subjets) == 2 else 0.4
+                for isj, sj in enumerate(fj.subjets):
+                    sj.matchAllMuons, sj.matchLooseMuons = 0, 0
+                    for imu, mu in enumerate(self._allMuons):
+                        if deltaR(mu, sj) <= drcut:
+                            sj.matchAllMuons += 1
+                            if self._allMuonsLooseFlag[imu]:
+                                sj.matchLooseMuons += 1
 
             if probe_jets[0].is_qualified is False and probe_jets[1].is_qualified is False:
                 return False
