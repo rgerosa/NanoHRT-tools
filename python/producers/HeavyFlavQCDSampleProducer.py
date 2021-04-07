@@ -43,7 +43,7 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
                 return False
 
         self.loadGenHistory(event, probe_jets)
-        self.evalTagger(event, probe_jets)
+        #self.evalTagger(event, probe_jets)
         self.evalMassRegression(event, probe_jets)
 
         # fill output branches
