@@ -69,7 +69,7 @@ class JetCorrector(object):
 class JetMETCorrector(object):
 
     def __init__(
-            self, year, jetType="AK4PFchs", jec=False, jes=None, jes_source=None, jes_uncertainty_file_prefix=None,
+            self, year, isUL, jetType="AK4PFchs", jec=False, jes=None, jes_source=None, jes_uncertainty_file_prefix=None,
             jer='nominal', jmr=None, met_unclustered=None, smearMET=True, applyHEMUnc=False):
         '''
         jec: re-apply jet energy correction (True|False)
@@ -138,16 +138,16 @@ class JetMETCorrector(object):
                 (304911, 'Fall17_17Nov2017F_V32_DATA'),
             )
         elif self.year == 2018:
-            self.globalTag = 'Summer19UL18_V5_MC'
-            self.jerTag = 'Summer19UL18_JRV2_MC'
+            self.globalTag = 'Autumn18_V19_MC' if not isUL else 'Summer19UL18_V5_MC'
+            self.jerTag = 'Autumn18_V7b_MC' if not isUL else 'Summer19UL18_JRV2_MC'
             self.dataTags = (
                 # set the name of the tarball with a dummy run number
-                (0, 'Summer19UL18_V5_DATA'),
+                (0, 'Autumn18_V19_DATA' if not isUL else 'Summer19UL18_V5_DATA'),
                 # (start run number (inclusive), 'tag name')
-                (315252, 'Summer19UL18_RunA_V5_DATA'),
-                (316998, 'Summer19UL18_RunB_V5_DATA'),
-                (319313, 'Summer19UL18_RunC_V5_DATA'),
-                (320394, 'Summer19UL18_RunD_V5_DATA'),
+                (315252, 'Autumn18_RunA_V19_DATA' if not isUL else 'Summer19UL18_RunA_V5_DATA'),
+                (316998, 'Autumn18_RunB_V19_DATA' if not isUL else 'Summer19UL18_RunB_V5_DATA'),
+                (319313, 'Autumn18_RunC_V19_DATA' if not isUL else 'Summer19UL18_RunC_V5_DATA'),
+                (320394, 'Autumn18_RunD_V19_DATA' if not isUL else 'Summer19UL18_RunD_V5_DATA'),
             )
         else:
             raise RuntimeError('Invalid year: %s' % (str(self.year)))

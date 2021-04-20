@@ -46,10 +46,11 @@ class HeavyFlavBaseProducer(Module, object):
     def __init__(self, channel, **kwargs):
         self._channel = channel  # 'qcd', 'photon', 'inclusive', 'muon'
         self.year = int(kwargs['year'])
+        self.ul = kwargs['ul']
         self.jetType = kwargs.get('jetType', 'ak8').lower()
         self._jmeSysts = {'jec': False, 'jes': None, 'jes_source': '', 'jes_uncertainty_file_prefix': '',
                           'jer': None, 'jmr': None, 'met_unclustered': None, 'smearMET': True, 'applyHEMUnc': False}
-        self._opts = {'sfbdt_threshold': -99,
+        self._opts = {'sfbdt_threshold': -99, 'sfbdt_model_dir': 'null',
                       'run_tagger': False, 'tagger_versions': ['V02b', 'V02c', 'V02d'],
                       'run_mass_regression': False, 'mass_regression_versions': ['V01a', 'V01b', 'V01c'],
                       'WRITE_CACHE_FILE': False}
@@ -73,7 +74,7 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'SubGenJetAK8'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train_qcd.model.%d' % idx)
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/%s/xgb_train_qcd.model.%d' % (self._opts['sfbdt_model_dir'], idx))
                 for idx in range(10)]  # FIXME: update to AK8 training
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
@@ -85,7 +86,7 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'GenSubJetAK15'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak15/xgb_train_qcd.model.%d' % idx)
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/%s/xgb_train_qcd.model.%d' % (self._opts['sfbdt_model_dir'], idx))
                 for idx in range(10)]
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
@@ -95,9 +96,9 @@ class HeavyFlavBaseProducer(Module, object):
         self._fill_sv = self._channel in ('qcd', 'photon', 'inclusive')
 
         if self._needsJMECorr:
-            self.jetmetCorr = JetMETCorrector(year=self.year, jetType="AK4PFchs", **self._jmeSysts)
-            self.fatjetCorr = JetMETCorrector(year=self.year, jetType="AK8PFPuppi", **self._jmeSysts)
-            self.subjetCorr = JetMETCorrector(year=self.year, jetType="AK4PFPuppi", **self._jmeSysts)
+            self.jetmetCorr = JetMETCorrector(year=self.year, isUL=self.ul, jetType="AK4PFchs", **self._jmeSysts)
+            self.fatjetCorr = JetMETCorrector(year=self.year, isUL=self.ul, jetType="AK8PFPuppi", **self._jmeSysts)
+            self.subjetCorr = JetMETCorrector(year=self.year, isUL=self.ul, jetType="AK4PFPuppi", **self._jmeSysts)
 
         if self._opts['run_tagger'] or self._opts['run_mass_regression']:
             from ..helpers.makeInputs import ParticleNetTagInfoMaker

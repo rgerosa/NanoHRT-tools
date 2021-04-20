@@ -9,7 +9,7 @@ import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 hrt_cfgname = 'heavyFlavSFTree_cfg.json'
-default_config = {'sfbdt_threshold': -99,
+default_config = {'sfbdt_threshold': -99, 'sfbdt_model_dir': 'null',
                   'run_tagger': False, 'tagger_versions': ['V02b', 'V02c', 'V02d'],
                   'run_mass_regression': False, 'mass_regression_versions': ['V01a', 'V01b', 'V01c'],
                   'jec': False, 'jes': None, 'jes_source': '', 'jes_uncertainty_file_prefix': '',
@@ -53,11 +53,14 @@ def _process(args):
         logging.info('Will run mass regression version(s): %s' % ','.join(default_config['mass_regression_versions']))
 
     year = int(args.year)
+    ul = args.ul
     channel = args.channel
     default_config['year'] = year
+    default_config['ul'] = ul
     default_config['channel'] = channel
     if channel in ('qcd', 'photon'):
         default_config['sfbdt_threshold'] = args.sfbdt
+        default_config['sfbdt_model_dir'] = args.sfbdt_model
 
     if year in (2017, 2018):
         args.weight_file = 'samples/xsec_2017.conf'
@@ -164,6 +167,11 @@ def main():
                         help='sfBDT cut, applies only to `qcd` and `photon` channels. Default: %(default)s'
                         )
 
+    parser.add_argument('--sfbdt-model',
+                        type=str, default='ak15',
+                        help='sfBDT modek dir. Default: %(default)s'
+                        )
+
     parser.add_argument('--run-syst',
                         action='store_true', default=False,
                         help='Run all the systematic trees. Default: %(default)s'
@@ -178,6 +186,11 @@ def main():
                         type=str,
                         required=True,
                         help='Year: 2016, 2017, 2018, or comma separated list e.g., `2016,2017,2018`'
+                        )
+
+    parser.add_argument('--ul',
+                        action='store_true', default=False,
+                        help='Run the UL settings in JME'
                         )
 
     parser.add_argument('--sample-dir',
