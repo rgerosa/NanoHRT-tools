@@ -260,7 +260,7 @@ def create_metadata(args):
     _, samp_to_datasets = load_dataset_file(args.datasets)
 
     # discover all the datasets
-    if args.inputdir:
+    if args.inputdir and not args.inputjson:
         found_samples = os.listdir(args.inputdir)
         for samp in samp_to_datasets:
             filelist = []
@@ -284,6 +284,24 @@ def create_metadata(args):
                                 logging.warning('Ignoring empty MC file %s' % os.path.join(dp, f))
                                 continue
                         filelist.append(os.path.join(dp, f))
+            if len(filelist):
+                filelist = sorted(filelist)
+                md['samples'].append(samp)
+                md['inputfiles'][samp] = filelist
+    elif args.inputjson:
+        import json
+        with open(args.inputjson) as f:
+            js = json.load(f)
+        found_samples = list(js.keys())
+        for samp in samp_to_datasets:
+            filelist = []
+            for dataset in samp_to_datasets[samp]:
+                if sname(dataset) not in found_samples:
+                    logging.warning('Cannot find dataset %s in the input json %s' % (dataset, args.inputjson))
+                    continue
+                if not select_sample(dataset):
+                    continue
+                filelist = js[sname(dataset)]
             if len(filelist):
                 filelist = sorted(filelist)
                 md['samples'].append(samp)
@@ -614,6 +632,9 @@ def get_arg_parser():
     parser.add_argument('-m', '--metadata',
         default='metadata.json',
         help='Metadata json file. Default: %(default)s'
+    )
+    parser.add_argument('--inputjson', default=None,
+        help='Input json.'
     )
     parser.add_argument('--extra-transfer',
         default=None,
