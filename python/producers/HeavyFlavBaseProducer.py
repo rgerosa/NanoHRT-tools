@@ -219,6 +219,12 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "ParticleNetMD_XccVsQCD", "F")
             self.out.branch(prefix + "ParticleNetMD_XccOrXqqVsQCD", "F")
 
+            self.out.branch(prefix + "btagDDBvLV2", "F")
+            self.out.branch(prefix + "btagDDCvBV2", "F")
+            self.out.branch(prefix + "btagDDCvLV2", "F")
+            self.out.branch(prefix + "btagDeepB", "F")
+            self.out.branch(prefix + "btagHbb", "F")
+
             if self._opts['run_tagger']:
                 self.out.branch(prefix + "origParticleNetMD_XccVsQCD", "F")
                 self.out.branch(prefix + "origParticleNetMD_XbbVsQCD", "F")
@@ -771,6 +777,19 @@ class HeavyFlavBaseProducer(Module, object):
                                     convert_prob(fj, ['Xcc'], bkgs, prefix='ParticleNetMD_prob'))
                 self.out.fillBranch(prefix + "origParticleNetMD_XbbVsQCD",
                                     convert_prob(fj, ['Xbb'], bkgs, prefix='ParticleNetMD_prob'))
+
+            try:
+                self.out.fillBranch(prefix + "btagDDBvLV2", fj.btagDDBvLV2)
+                self.out.fillBranch(prefix + "btagDDCvBV2", fj.btagDDCvBV2)
+                self.out.fillBranch(prefix + "btagDDCvLV2", fj.btagDDCvLV2)
+                self.out.fillBranch(prefix + "btagDeepB", fj.btagDeepB)
+                self.out.fillBranch(prefix + "btagHbb", fj.btagHbb)
+            except:
+                self.out.fillBranch(prefix + "btagDDBvLV2", -1)
+                self.out.fillBranch(prefix + "btagDDCvBV2", -1)
+                self.out.fillBranch(prefix + "btagDDCvLV2", -1)
+                self.out.fillBranch(prefix + "btagDeepB", -1)
+                self.out.fillBranch(prefix + "btagHbb", -1)
 
             # matching variables
             if self.isMC:
