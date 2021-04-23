@@ -537,10 +537,10 @@ class HeavyFlavBaseProducer(Module, object):
                     hadGenHs.append(gp)
 
         for parton in itertools.chain(lepGenTops, hadGenTops):
-            parton.daus = (parton.genB, genparts[parton.genW.dauIdx[0]], genparts[parton.genW.dauIdx[1]])
-            parton.genW.daus = parton.daus[1:]
+            parton.genW.daus = [genparts[dauIdx] for dauIdx in parton.genW.dauIdx]
+            parton.daus = [parton.genB] + parton.genW.daus
         for parton in itertools.chain(hadGenWs, hadGenZs, hadGenHs):
-            parton.daus = (genparts[parton.dauIdx[0]], genparts[parton.dauIdx[1]])
+            parton.daus = [genparts[dauIdx] for dauIdx in parton.dauIdx]
 
         for fj in fatjets:
             fj.genH, fj.dr_H = closest(fj, hadGenHs)
@@ -839,8 +839,8 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "W_decay", max([abs(d.pdgId) for d in fj.genW.daus]) if fj.genW else 0)
 
                 # info of the closest hadGenTop
-                drwq1, drwq2 = [deltaR(fj, dau) for dau in fj.genT.genW.daus] if fj.genT else [99, 99]
-                wq1_pdgId, wq2_pdgId = [dau.pdgId for dau in fj.genT.genW.daus] if fj.genT else [0, 0]
+                drwq1, drwq2 = [deltaR(fj, dau) for dau in fj.genT.genW.daus] if fj.genT and len(fj.genT.genW.daus)==2 else [99, 99]
+                wq1_pdgId, wq2_pdgId = [dau.pdgId for dau in fj.genT.genW.daus] if fj.genT and len(fj.genT.genW.daus)==2 else [0, 0]
                 if drwq1 < drwq2:
                     drwq1, drwq2 = drwq2, drwq1
                     wq1_pdgId, wq2_pdgId = wq2_pdgId, wq1_pdgId
