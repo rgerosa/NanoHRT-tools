@@ -195,6 +195,9 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "sj2_btagdeepcsv", "F")
 
             # taggers
+            self.out.branch(prefix + "DeepAK8_H", "F")
+            self.out.branch(prefix + "DeepAK8_QCD", "F")
+            self.out.branch(prefix + "DeepAK8_QCDothers", "F")
             self.out.branch(prefix + "DeepAK8_TvsQCD", "F")
             self.out.branch(prefix + "DeepAK8_WvsQCD", "F")
             self.out.branch(prefix + "DeepAK8_ZvsQCD", "F")
@@ -631,6 +634,9 @@ class HeavyFlavBaseProducer(Module, object):
             # taggers
             try:
                 # Full
+                self.out.fillBranch(prefix + "DeepAK8_H", fj.deepTag_H)
+                self.out.fillBranch(prefix + "DeepAK8_QCD", fj.deepTag_QCD)
+                self.out.fillBranch(prefix + "DeepAK8_QCDothers", fj.deepTag_QCDothers)
                 self.out.fillBranch(prefix + "DeepAK8_TvsQCD", fj.deepTag_TvsQCD)
                 self.out.fillBranch(prefix + "DeepAK8_WvsQCD", fj.deepTag_WvsQCD)
                 self.out.fillBranch(prefix + "DeepAK8_ZvsQCD", fj.deepTag_ZvsQCD)
@@ -648,6 +654,9 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "DeepAK8MD_bbVsTop", bbVsTop)
             except RuntimeError:
                 # if no DeepAK8 branches
+                self.out.fillBranch(prefix + "DeepAK8_H", -1)
+                self.out.fillBranch(prefix + "DeepAK8_QCD", -1)
+                self.out.fillBranch(prefix + "DeepAK8_QCDothers", -1)
                 self.out.fillBranch(prefix + "DeepAK8_TvsQCD", -1)
                 self.out.fillBranch(prefix + "DeepAK8_WvsQCD", -1)
                 self.out.fillBranch(prefix + "DeepAK8_ZvsQCD", -1)
