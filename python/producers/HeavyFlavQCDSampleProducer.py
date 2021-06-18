@@ -26,8 +26,9 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         if self._opts['sfbdt_threshold'] > -99:
             self.selectSV(event)
-            if len(event.secondary_vertices) < 2:
-                return False
+            # Remove SV requirement
+            # if len(event.secondary_vertices) < 2:
+            #     return False
 
             for fj in probe_jets:
                 if not (len(fj.subjets) == 2 and fj.msoftdrop > 50 and fj.msoftdrop < 200):

@@ -456,18 +456,17 @@ class HeavyFlavBaseProducer(Module, object):
             fj.sj12_masscor_dxysig = 0
             if len(fj.subjets) == 2:
                 sj1, sj2 = fj.subjets
-                if len(sj1.sv_list) > 0 and len(sj2.sv_list) > 0:
-                    sj1_sv, sj2_sv = sj1.sv_list[0], sj2.sv_list[0]
-                    sfbdt_inputs = {
-                        'fj_2_tau21': fj.tau2 / fj.tau1 if fj.tau1 > 0 else 99,
-                        'fj_2_sj1_rawmass': sj1.mass,
-                        'fj_2_sj2_rawmass': sj2.mass,
-                        'fj_2_ntracks_sv12': fj.ntracks_sv12,
-                        'fj_2_sj1_sv1_pt': sj1_sv.pt,
-                        'fj_2_sj2_sv1_pt': sj2_sv.pt,
-                    }
-                    fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10))
-                    fj.sj12_masscor_dxysig = corrected_svmass(sj1_sv if sj1_sv.dxySig > sj2_sv.dxySig else sj2_sv)
+                sfbdt_inputs = {
+                    'fj_2_tau21': fj.tau2 / fj.tau1 if fj.tau1 > 0 else 99,
+                    'fj_2_sj1_rawmass': sj1.mass,
+                    'fj_2_sj2_rawmass': sj2.mass,
+                    'fj_2_ntracks_sv12': fj.ntracks_sv12,
+                    'fj_2_sj1_sv1_pt': sj1.sv_list[0].pt if len(sj1.sv_list) else 0,
+                    'fj_2_sj2_sv1_pt': sj2.sv_list[0].pt if len(sj2.sv_list) else 0,
+                }
+                fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10))
+                fj.sj12_masscor_dxysig = corrected_svmass(sj1.sv_list[0] if sj1.sv_list[0].dxySig > sj2.sv_list[0].dxySig else sj2.sv_list[0]) \
+                  if (len(sj1.sv_list) and len(sj2.sv_list)) else -1.
 
     def loadGenHistory(self, event, fatjets):
         # gen matching
