@@ -126,16 +126,17 @@ class JetMETCorrector(object):
                 (278820, 'Summer16_07Aug2017GH_V11_DATA'),
             )
         elif self.year == 2017:
-            self.globalTag = 'Fall17_17Nov2017_V32_MC'
-            self.jerTag = 'Fall17_V3_MC'
+            self.globalTag = 'Fall17_17Nov2017_V32_MC' if not isUL else 'Summer19UL17_V6_MC'
+            self.jerTag = 'Fall17_V3_MC' if not isUL else 'Summer19UL17_JRV2_MC'
             self.dataTags = (
                 # set the name of the tarball with a dummy run number
-                (0, 'Fall17_17Nov2017_V32_DATA'),
+                (0, 'Fall17_17Nov2017_V32_DATA' if not isUL else 'Summer19UL17_V6_DATA'),
                 # (start run number (inclusive), 'tag name')
-                (297020, 'Fall17_17Nov2017B_V32_DATA'),
-                (299337, 'Fall17_17Nov2017C_V32_DATA'),
-                (302030, 'Fall17_17Nov2017DE_V32_DATA'),
-                (304911, 'Fall17_17Nov2017F_V32_DATA'),
+                (297020, 'Fall17_17Nov2017B_V32_DATA' if not isUL else 'Summer19UL17_RunB_V6_DATA'),
+                (299337, 'Fall17_17Nov2017C_V32_DATA' if not isUL else 'Summer19UL17_RunC_V6_DATA'),
+                (302030, 'Fall17_17Nov2017DE_V32_DATA' if not isUL else 'Summer19UL17_RunD_V6_DATA'),
+                (303435, 'Fall17_17Nov2017DE_V32_DATA' if not isUL else 'Summer19UL17_RunE_V6_DATA'),
+                (304911, 'Fall17_17Nov2017F_V32_DATA' if not isUL else 'Summer19UL17_RunF_V6_DATA'),
             )
         elif self.year == 2018:
             self.globalTag = 'Autumn18_V19_MC' if not isUL else 'Summer19UL18_V5_MC'
@@ -196,7 +197,9 @@ class JetMETCorrector(object):
         # set up JER
         self.jetSmearer = None
         if self.jer is not None or self.jmr is not None:
-            self.jetSmearer = jetSmearer(self.jerTag, jetType=self.jetType)
+            print(">>>", self.jerTag, self.jetType)
+            _jetType = 'AK4PFchs' if self.jerTag == 'Summer19UL17_JRV2_MC' else self.jetType
+            self.jetSmearer = jetSmearer(self.jerTag, jetType=_jetType)
             self.jetSmearer.beginJob()
 
     def endJob(self):

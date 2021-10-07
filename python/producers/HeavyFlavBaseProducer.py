@@ -62,6 +62,7 @@ class HeavyFlavBaseProducer(Module, object):
         self._needsJMECorr = any([self._jmeSysts['jec'], self._jmeSysts['jes'],
                                   self._jmeSysts['jer'], self._jmeSysts['jmr'],
                                   self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc']])
+#         self._needsJMECorr = False
 
         logger.info('Running %s channel for %s jets with JME systematics %s, other options %s',
                     self._channel, self.jetType, str(self._jmeSysts), str(self._opts))
@@ -225,6 +226,15 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "btagDeepB", "F")
             self.out.branch(prefix + "btagHbb", "F")
 
+            # for NanoV8/v9
+            self.out.branch(prefix + "DeepAK8MD_HbbvsQCD", "F")
+            self.out.branch(prefix + "DeepAK8MD_H4qvsQCD", "F")
+            self.out.branch(prefix + "DeepAK8MD_ccVsLight", "F")
+            self.out.branch(prefix + "ParticleNet_HbbvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_HccvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_H4qvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_mass", "F")
+
             if self._opts['run_tagger']:
                 self.out.branch(prefix + "origParticleNetMD_XccVsQCD", "F")
                 self.out.branch(prefix + "origParticleNetMD_XbbVsQCD", "F")
@@ -367,7 +377,7 @@ class HeavyFlavBaseProducer(Module, object):
         # correct Jets and MET
         event.idx = event._entry if event._tree._entrylist is None else event._tree._entrylist.GetEntry(event._entry)
         event._allJets = Collection(event, "Jet")
-        event.met = METObject(event, "METFixEE2017") if self.year == 2017 else METObject(event, "MET")
+        event.met = METObject(event, "METFixEE2017") if (self.year == 2017 and not self.ul) else METObject(event, "MET")
         event._allFatJets = Collection(event, self._fj_name)
         event.subjets = Collection(event, self._sj_name)  # do not sort subjets after updating!!
 
@@ -727,6 +737,15 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "DeepAK8MD_ZHccvsQCD", -1)
                 self.out.fillBranch(prefix + "DeepAK8MD_bbVsLight", -1)
                 self.out.fillBranch(prefix + "DeepAK8MD_bbVsTop", -1)
+            # the scores added in NanoV8/9
+            try:
+                self.out.fillBranch(prefix + "DeepAK8MD_HbbvsQCD", fj.deepTagMD_HbbvsQCD)
+                self.out.fillBranch(prefix + "DeepAK8MD_H4qvsQCD", fj.deepTagMD_H4qvsQCD)
+                self.out.fillBranch(prefix + "DeepAK8MD_ccVsLight", fj.deepTagMD_ccvsLight)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "DeepAK8MD_HbbvsQCD", -1)
+                self.out.fillBranch(prefix + "DeepAK8MD_H4qvsQCD", -1)
+                self.out.fillBranch(prefix + "DeepAK8MD_ccVsLight", -1)
 
             try:
                 self.out.fillBranch(prefix + "DeepAK8_ZHbbvsQCD",
@@ -748,6 +767,19 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "ParticleNet_TvsQCD", -1)
                 self.out.fillBranch(prefix + "ParticleNet_WvsQCD", -1)
                 self.out.fillBranch(prefix + "ParticleNet_ZvsQCD", -1)
+            # the scores added in NanoV8/9
+            try:
+                self.out.fillBranch(prefix + "ParticleNet_HbbvsQCD", fj.particleNet_HbbvsQCD)
+                self.out.fillBranch(prefix + "ParticleNet_HccvsQCD", fj.particleNet_HccvsQCD)
+                self.out.fillBranch(prefix + "ParticleNet_H4qvsQCD", fj.particleNet_H4qvsQCD)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "ParticleNet_HbbvsQCD", -1)
+                self.out.fillBranch(prefix + "ParticleNet_HccvsQCD", -1)
+                self.out.fillBranch(prefix + "ParticleNet_H4qvsQCD", -1)
+            try:
+                self.out.fillBranch(prefix + "ParticleNet_mass", fj.particleNet_mass)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "ParticleNet_mass", -1)
 
             # ParticleNet-MD
             self.out.fillBranch(prefix + "ParticleNetMD_Xbb", fj.particleNetMD_Xbb)
@@ -777,6 +809,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "origParticleNetMD_XbbVsQCD",
                                     convert_prob(fj, ['Xbb'], bkgs, prefix='ParticleNetMD_prob'))
 
+            # added for PFNano and NanoV8
             try:
                 self.out.fillBranch(prefix + "btagDDBvLV2", fj.btagDDBvLV2)
                 self.out.fillBranch(prefix + "btagDDCvBV2", fj.btagDDCvBV2)

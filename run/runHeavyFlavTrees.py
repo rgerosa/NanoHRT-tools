@@ -62,8 +62,8 @@ def _process(args):
         default_config['sfbdt_threshold'] = args.sfbdt
         default_config['sfbdt_model_dir'] = args.sfbdt_model
 
-    if year in (2017, 2018):
-        args.weight_file = 'samples/xsec_2017.conf'
+#     if year in (2017, 2018):
+#         args.weight_file = 'samples/xsec_2017.conf'
 
     basename = os.path.basename(args.outputdir) + '_' + args.jet_type + '_' + channel + '_' + str(year)
     args.outputdir = os.path.join(os.path.dirname(args.outputdir), basename, 'data' if args.run_data else 'mc')
