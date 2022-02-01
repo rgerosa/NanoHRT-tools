@@ -73,7 +73,7 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'SubGenJetAK8'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak15/xgb_train_qcd.model.%d' % idx)
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train_qcd.model.%d' % idx)
                 for idx in range(10)]  # FIXME: update to AK8 training
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
@@ -85,7 +85,7 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'GenSubJetAK15'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak15/xgb_train_qcd.model.%d' % idx)
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train_qcd.model.%d' % idx)
                 for idx in range(10)]
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
@@ -218,6 +218,19 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "ParticleNetMD_XbbVsQCD", "F")
             self.out.branch(prefix + "ParticleNetMD_XccVsQCD", "F")
             self.out.branch(prefix + "ParticleNetMD_XccOrXqqVsQCD", "F")
+            # Additional tagger scores from NanoAODv9
+            self.out.branch(prefix + "DeepAK8MD_HbbvsQCD", "F")
+            self.out.branch(prefix + "DeepAK8MD_H4qvsQCD", "F")
+            self.out.branch(prefix + "DeepAK8MD_ccVsLight", "F")
+            self.out.branch(prefix + "ParticleNet_HbbvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_HccvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_H4qvsQCD", "F")
+            self.out.branch(prefix + "ParticleNet_mass", "F")
+            self.out.branch(prefix + "btagDDBvLV2", "F")
+            self.out.branch(prefix + "btagDDCvBV2", "F")
+            self.out.branch(prefix + "btagDDCvLV2", "F")
+            self.out.branch(prefix + "btagDeepB", "F")
+            self.out.branch(prefix + "btagHbb", "F")
 
             if self._opts['run_tagger']:
                 self.out.branch(prefix + "origParticleNetMD_XccVsQCD", "F")
@@ -300,6 +313,29 @@ class HeavyFlavBaseProducer(Module, object):
 
                 # sfBDT
                 self.out.branch(prefix + "sfBDT", "F")
+
+                # bb/cc gen hadrons
+                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                    for hadtype in ['b', 'c']:
+                        for hadidx in [1, 2]:
+                            self.out.branch(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), "F")
+                            self.out.branch(prefix + "gen{}hadron{}_eta".format(hadtype, hadidx), "F")
+                            self.out.branch(prefix + "gen{}hadron{}_phi".format(hadtype, hadidx), "F")
+                            self.out.branch(prefix + "gen{}hadron{}_mass".format(hadtype, hadidx), "F")
+                            self.out.branch(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), "I")
+
+                # last parton list
+                if self.isMC:
+                    for ptsuf in ['', '50']:
+                        self.out.branch(prefix + "npart{}".format(ptsuf), "I")
+                        self.out.branch(prefix + "nbpart{}".format(ptsuf), "I")
+                        self.out.branch(prefix + "ncpart{}".format(ptsuf), "I")
+                        self.out.branch(prefix + "ngpart{}".format(ptsuf), "I")
+                        self.out.branch(prefix + "part{}_sumpt".format(ptsuf), "F")
+                        self.out.branch(prefix + "bpart{}_sumpt".format(ptsuf), "F")
+                        self.out.branch(prefix + "cpart{}_sumpt".format(ptsuf), "F")
+                        self.out.branch(prefix + "gpart{}_sumpt".format(ptsuf), "F")
+         
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         if self._opts['run_tagger'] and self._opts['WRITE_CACHE_FILE']:
@@ -463,7 +499,8 @@ class HeavyFlavBaseProducer(Module, object):
 
         def isHadronic(gp):
             if len(gp.dauIdx) == 0:
-                raise ValueError('Particle has no daughters!')
+                return False
+                # raise ValueError('Particle has no daughters!')
             for idx in gp.dauIdx:
                 if abs(genparts[idx].pdgId) < 6:
                     return True
@@ -519,6 +556,48 @@ class HeavyFlavBaseProducer(Module, object):
             fj.genW, fj.dr_W = closest(fj, hadGenWs)
             fj.genT, fj.dr_T = closest(fj, hadGenTops)
             fj.genLepT, fj.dr_LepT = closest(fj, lepGenTops)
+
+        if self._fill_sv:
+            # bb/cc matching
+            # FIXME: only available for qcd & ggh(cc/bb) sample
+            probe_fj = event.fatjets[1 if self._channel == 'qcd' else 0]
+            probe_fj.genBhadron, probe_fj.genChadron = [], []
+            for gp in genparts:
+                if gp.pdgId in [5, -5] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                    if len(probe_fj.genBhadron)==0 or (len(probe_fj.genBhadron)>0 and gp.genPartIdxMother==probe_fj.genBhadron[0].genPartIdxMother):
+                        probe_fj.genBhadron.append(gp)
+                if gp.pdgId in [4, -4] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                    if len(probe_fj.genChadron)==0 or (len(probe_fj.genChadron)>0 and gp.genPartIdxMother==probe_fj.genChadron[0].genPartIdxMother):
+                        probe_fj.genChadron.append(gp)
+            probe_fj.genBhadron.sort(key=lambda x: x.pt, reverse=True)
+            probe_fj.genChadron.sort(key=lambda x: x.pt, reverse=True)
+            # null padding
+            probe_fj.genBhadron += [_NullObject() for _ in range(2-len(probe_fj.genBhadron))]
+            probe_fj.genChadron += [_NullObject() for _ in range(2-len(probe_fj.genChadron))]
+
+            # last parton information
+            for ifj in range(2 if self._channel == 'qcd' else 1):
+                fj = event.fatjets[ifj]
+                fj.npart, fj.nbpart, fj.ncpart, fj.ngpart, fj.part_sumpt, fj.bpart_sumpt, fj.cpart_sumpt, fj.gpart_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
+                fj.npart50, fj.nbpart50, fj.ncpart50, fj.ngpart50, fj.part50_sumpt, fj.bpart50_sumpt, fj.cpart50_sumpt, fj.gpart50_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
+                for gp in genparts:
+                    if gp.status>70 and gp.status<80 and (gp.statusFlags & (1 << 13)) and abs(gp.pdgId) in [1,2,3,4,5,6,21] and gp.pt>=5 and deltaR(gp, fj)<=self._jetConeSize:
+                        fj.npart += 1; fj.part_sumpt += gp.pt
+                        if gp.pdgId in [5, -5]:
+                            fj.nbpart += 1; fj.bpart_sumpt += gp.pt
+                        elif gp.pdgId in [4, -4]:
+                            fj.ncpart += 1; fj.cpart_sumpt += gp.pt
+                        elif gp.pdgId == 21:
+                            fj.ngpart += 1; fj.gpart_sumpt += gp.pt
+                        if gp.pt>=50:
+                            fj.npart50 += 1; fj.part50_sumpt += gp.pt
+                            if gp.pdgId in [5, -5]:
+                                fj.nbpart50 += 1; fj.bpart50_sumpt += gp.pt
+                            elif gp.pdgId in [4, -4]:
+                                fj.ncpart50 += 1; fj.cpart50_sumpt += gp.pt
+                            elif gp.pdgId == 21:
+                                fj.ngpart50 += 1; fj.gpart50_sumpt += gp.pt
+
 
     def evalTagger(self, event, jets):
         for j in jets:
@@ -710,6 +789,40 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "origParticleNetMD_XbbVsQCD",
                                     convert_prob(fj, ['Xbb'], None, prefix='ParticleNetMD_prob'))
 
+            # Additional tagger scores from NanoAODv9
+            try:
+                self.out.fillBranch(prefix + "DeepAK8MD_HbbvsQCD", fj.deepTagMD_HbbvsQCD)
+                self.out.fillBranch(prefix + "DeepAK8MD_H4qvsQCD", fj.deepTagMD_H4qvsQCD)
+                self.out.fillBranch(prefix + "DeepAK8MD_ccVsLight", fj.deepTagMD_ccvsLight)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "DeepAK8MD_HbbvsQCD", -1)
+                self.out.fillBranch(prefix + "DeepAK8MD_H4qvsQCD", -1)
+                self.out.fillBranch(prefix + "DeepAK8MD_ccVsLight", -1)
+            try:
+                self.out.fillBranch(prefix + "ParticleNet_HbbvsQCD", fj.particleNet_HbbvsQCD)
+                self.out.fillBranch(prefix + "ParticleNet_HccvsQCD", fj.particleNet_HccvsQCD)
+                self.out.fillBranch(prefix + "ParticleNet_H4qvsQCD", fj.particleNet_H4qvsQCD)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "ParticleNet_HbbvsQCD", -1)
+                self.out.fillBranch(prefix + "ParticleNet_HccvsQCD", -1)
+                self.out.fillBranch(prefix + "ParticleNet_H4qvsQCD", -1)
+            try:
+                self.out.fillBranch(prefix + "ParticleNet_mass", fj.particleNet_mass)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "ParticleNet_mass", -1)
+            try:
+                self.out.fillBranch(prefix + "btagDDBvLV2", fj.btagDDBvLV2)
+                self.out.fillBranch(prefix + "btagDDCvBV2", fj.btagDDCvBV2)
+                self.out.fillBranch(prefix + "btagDDCvLV2", fj.btagDDCvLV2)
+                self.out.fillBranch(prefix + "btagDeepB", fj.btagDeepB)
+                self.out.fillBranch(prefix + "btagHbb", fj.btagHbb)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "btagDDBvLV2", -1)
+                self.out.fillBranch(prefix + "btagDDCvBV2", -1)
+                self.out.fillBranch(prefix + "btagDDCvLV2", -1)
+                self.out.fillBranch(prefix + "btagDeepB", -1)
+                self.out.fillBranch(prefix + "btagHbb", -1)
+
             # matching variables
             if self.isMC:
                 try:
@@ -808,3 +921,32 @@ class HeavyFlavBaseProducer(Module, object):
 
                 # sfBDT
                 self.out.fillBranch(prefix + "sfBDT", fj.sfBDT)
+
+                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                    for hadtype in ['b', 'c']:
+                        for hadidx in [1, 2]:
+                            gp = fj.genBhadron[hadidx - 1] if hadtype=='b' else fj.genChadron[hadidx - 1]
+                            fill_gp = self._get_filler(gp)  # wrapper, fill default value if sv=None
+                            fill_gp(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), gp.pt)
+                            fill_gp(prefix + "gen{}hadron{}_eta".format(hadtype, hadidx), gp.eta)
+                            fill_gp(prefix + "gen{}hadron{}_phi".format(hadtype, hadidx), gp.phi)
+                            fill_gp(prefix + "gen{}hadron{}_mass".format(hadtype, hadidx), gp.mass)
+                            fill_gp(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), gp.pdgId)
+
+                if self.isMC:
+                    self.out.fillBranch(prefix + "npart", fj.npart)
+                    self.out.fillBranch(prefix + "nbpart", fj.nbpart)
+                    self.out.fillBranch(prefix + "ncpart", fj.ncpart)
+                    self.out.fillBranch(prefix + "ngpart", fj.ngpart)
+                    self.out.fillBranch(prefix + "part_sumpt", fj.part_sumpt)
+                    self.out.fillBranch(prefix + "bpart_sumpt", fj.bpart_sumpt)
+                    self.out.fillBranch(prefix + "cpart_sumpt", fj.cpart_sumpt)
+                    self.out.fillBranch(prefix + "gpart_sumpt", fj.gpart_sumpt)
+                    self.out.fillBranch(prefix + "npart50", fj.npart50)
+                    self.out.fillBranch(prefix + "nbpart50", fj.nbpart50)
+                    self.out.fillBranch(prefix + "ncpart50", fj.ncpart50)
+                    self.out.fillBranch(prefix + "ngpart50", fj.ngpart50)
+                    self.out.fillBranch(prefix + "part50_sumpt", fj.part50_sumpt)
+                    self.out.fillBranch(prefix + "bpart50_sumpt", fj.bpart50_sumpt)
+                    self.out.fillBranch(prefix + "cpart50_sumpt", fj.cpart50_sumpt)
+                    self.out.fillBranch(prefix + "gpart50_sumpt", fj.gpart50_sumpt)
