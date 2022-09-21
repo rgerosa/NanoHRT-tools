@@ -379,6 +379,11 @@ class HeavyFlavBaseProducer(Module, object):
         event._allFatJets = Collection(event, self._fj_name)
         event.subjets = Collection(event, self._sj_name)  # do not sort subjets after updating!!
 
+        # ## do some hack here... use uncorrected jet pT!
+        # for idx, j in enumerate(event._allFatJets):
+        #     j.rawP4 = polarP4(j) * (1. - j.rawFactor)
+        #     j.pt = j.rawP4.pt()
+        #     j.mass = j.rawP4.mass()
         if self._needsJMECorr:
             rho = event.fixedGridRhoFastjetAll
             # correct AK4 jets and MET
