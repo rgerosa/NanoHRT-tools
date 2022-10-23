@@ -3,7 +3,7 @@ from .HeavyFlavQCDSampleProducer import QCDSampleProducer
 from .HeavyFlavMuonSampleProducer import MuonSampleProducer
 from .HeavyFlavDibosonSampleProducer import DibosonSampleProducer
 from .HeavyFlavInclusiveSampleProducer import InclusiveSampleProducer
-
+from .HeavyFlavHiggsSampleProducer import HiggsSampleProducer
 
 def heavyFlavSFTreeFromConfig():
     import yaml
@@ -21,5 +21,7 @@ def heavyFlavSFTreeFromConfig():
         return DibosonSampleProducer(**cfg)
     elif channel == 'inclusive':
         return InclusiveSampleProducer(**cfg)
+    elif channel == 'higgs':
+        return HiggsSampleProducer(**cfg)
     else:
         return RuntimeError('Unsupported channel %s' % channel)
