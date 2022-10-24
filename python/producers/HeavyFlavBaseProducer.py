@@ -179,6 +179,10 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "regressed_mass", "F")
             self.out.branch(prefix + "tau21", "F")
             self.out.branch(prefix + "tau32", "F")
+            self.out.branch(prefix + "tau1", "F")
+            self.out.branch(prefix + "tau2", "F")
+            self.out.branch(prefix + "tau3", "F")
+            self.out.branch(prefix + "tau4", "F")
             self.out.branch(prefix + "btagcsvv2", "F")
             self.out.branch(prefix + "btagjp", "F")
 
@@ -315,7 +319,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.branch(prefix + "sfBDT", "F")
 
                 # bb/cc gen hadrons
-                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                if self.isMC:
                     for hadtype in ['b', 'c']:
                         for hadidx in [1, 2]:
                             self.out.branch(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), "F")
@@ -335,7 +339,21 @@ class HeavyFlavBaseProducer(Module, object):
                         self.out.branch(prefix + "bpart{}_sumpt".format(ptsuf), "F")
                         self.out.branch(prefix + "cpart{}_sumpt".format(ptsuf), "F")
                         self.out.branch(prefix + "gpart{}_sumpt".format(ptsuf), "F")
-         
+                
+                # matched hadron information
+                if self.isMC:
+                    self.out.branch(prefix + "nMatchedInitHads", "I")
+                    self.out.branch(prefix + "matchedInitHadsTau1", "F")
+                    self.out.branch(prefix + "matchedInitHadsTau2", "F")
+                    self.out.branch(prefix + "matchedInitHadsTau3", "F")
+                    self.out.branch(prefix + "matchedInitHadsTau4", "F")
+                    for nj in [1, 2, 3]:
+                        for ij in range(1, nj+1):
+                            self.out.branch(prefix + f"matchedInitHads_{nj}sj{ij}_pt", "F")
+                            self.out.branch(prefix + f"matchedInitHads_{nj}sj{ij}_eta", "F")
+                            self.out.branch(prefix + f"matchedInitHads_{nj}sj{ij}_phi", "F")
+                            self.out.branch(prefix + f"matchedInitHads_{nj}sj{ij}_mass", "F")
+
 
     def endFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         if self._opts['run_tagger'] and self._opts['WRITE_CACHE_FILE']:
@@ -565,24 +583,23 @@ class HeavyFlavBaseProducer(Module, object):
         if self._fill_sv:
             # bb/cc matching
             # FIXME: only available for qcd & ggh(cc/bb) sample
-            probe_fj = event.fatjets[1 if self._channel == 'qcd' else 0]
-            probe_fj.genBhadron, probe_fj.genChadron = [], []
-            for gp in genparts:
-                if gp.pdgId in [5, -5] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
-                    if len(probe_fj.genBhadron)==0 or (len(probe_fj.genBhadron)>0 and gp.genPartIdxMother==probe_fj.genBhadron[0].genPartIdxMother):
-                        probe_fj.genBhadron.append(gp)
-                if gp.pdgId in [4, -4] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
-                    if len(probe_fj.genChadron)==0 or (len(probe_fj.genChadron)>0 and gp.genPartIdxMother==probe_fj.genChadron[0].genPartIdxMother):
-                        probe_fj.genChadron.append(gp)
-            probe_fj.genBhadron.sort(key=lambda x: x.pt, reverse=True)
-            probe_fj.genChadron.sort(key=lambda x: x.pt, reverse=True)
-            # null padding
-            probe_fj.genBhadron += [_NullObject() for _ in range(2-len(probe_fj.genBhadron))]
-            probe_fj.genChadron += [_NullObject() for _ in range(2-len(probe_fj.genChadron))]
+            for probe_fj in fatjets:
+                probe_fj.genBhadron, probe_fj.genChadron = [], []
+                for gp in genparts:
+                    if gp.pdgId in [5, -5] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                        if len(probe_fj.genBhadron)==0 or (len(probe_fj.genBhadron)>0 and gp.genPartIdxMother==probe_fj.genBhadron[0].genPartIdxMother):
+                            probe_fj.genBhadron.append(gp)
+                    if gp.pdgId in [4, -4] and gp.genPartIdxMother>=0 and genparts[gp.genPartIdxMother].pdgId in [21, 25] and deltaR(gp, probe_fj)<=self._jetConeSize:
+                        if len(probe_fj.genChadron)==0 or (len(probe_fj.genChadron)>0 and gp.genPartIdxMother==probe_fj.genChadron[0].genPartIdxMother):
+                            probe_fj.genChadron.append(gp)
+                probe_fj.genBhadron.sort(key=lambda x: x.pt, reverse=True)
+                probe_fj.genChadron.sort(key=lambda x: x.pt, reverse=True)
+                # null padding
+                probe_fj.genBhadron += [_NullObject() for _ in range(2-len(probe_fj.genBhadron))]
+                probe_fj.genChadron += [_NullObject() for _ in range(2-len(probe_fj.genChadron))]
 
             # last parton information
-            for ifj in range(2 if self._channel == 'qcd' else 1):
-                fj = event.fatjets[ifj]
+            for fj in fatjets:
                 fj.npart, fj.nbpart, fj.ncpart, fj.ngpart, fj.part_sumpt, fj.bpart_sumpt, fj.cpart_sumpt, fj.gpart_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
                 fj.npart50, fj.nbpart50, fj.ncpart50, fj.ngpart50, fj.part50_sumpt, fj.bpart50_sumpt, fj.cpart50_sumpt, fj.gpart50_sumpt = 0, 0, 0, 0, 0, 0, 0, 0
                 for gp in genparts:
@@ -602,6 +619,52 @@ class HeavyFlavBaseProducer(Module, object):
                                 fj.ncpart50 += 1; fj.cpart50_sumpt += gp.pt
                             elif gp.pdgId == 21:
                                 fj.ngpart50 += 1; fj.gpart50_sumpt += gp.pt
+
+            # first hadron information (make sure to use the full-GENParT Nano)
+            import awkward as ak
+            import pyjet
+            from coffea.nanoevents.methods import vector
+            for fj in fatjets:
+                # collect all initial hadrons matched to the fatjet
+                fj.genInitHadrons = []
+                for gp in genparts:
+                    if abs(gp.pdgId) > 100 and gp.genPartIdxMother>=0 and abs(genparts[gp.genPartIdxMother].pdgId) in [1,2,3,4,5,6] and deltaR(gp, fj)<=self._jetConeSize:
+                        fj.genInitHadrons.append(gp)
+
+                # calculate n-subjettiness
+                parts = ak.zip({
+                    'pt': [[gp.pt for gp in fj.genInitHadrons]],
+                    'eta': [[gp.eta for gp in fj.genInitHadrons]],
+                    'phi': [[gp.phi for gp in fj.genInitHadrons]],
+                    'mass': [[gp.mass for gp in fj.genInitHadrons]]},
+                    behavior=vector.behavior,
+                    with_name='PtEtaPhiMLorentzVector',
+                )
+                parts_npy = np.array(
+                    [(p.pt, p.eta, p.phi, p.mass) for p in parts[0]],
+                    dtype=[('pT', 'f8'), ('eta', 'f8'), ('phi', 'f8'), ('mass', 'f8')]
+                )
+                sequence = pyjet.cluster(parts_npy, algo='kt', R=1.5)
+
+                # calculate tau1 to tau4
+                for nsub in [1, 2, 3, 4]:
+                    if len(fj.genInitHadrons) < nsub:
+                        setattr(fj, f'matchedInitHadsTau{nsub}', -1)
+                        setattr(fj, f'matchedInitHads_{nsub}sj', None)
+                    else:
+                        subjets = sequence.exclusive_jets(nsub)
+                        subjets = ak.zip({
+                            'pt': [[j.pt for j in subjets]],
+                            'eta': [[j.eta for j in subjets]],
+                            'phi': [[j.phi for j in subjets]],
+                            'mass': [[j.mass for j in subjets]]},
+                            behavior=vector.behavior,
+                            with_name='PtEtaPhiMLorentzVector',
+                        )
+                        comb = ak.cartesian([parts, subjets], nested=True)
+                        tau = ak.sum(parts.pt * ak.min(comb['0'].delta_r(comb['1']), axis=2), axis=1)[0] / (ak.sum(parts.pt, axis=1)[0] * self._jetConeSize)
+                        setattr(fj, f'matchedInitHadsTau{nsub}', tau)
+                        setattr(fj, f'matchedInitHads_{nsub}sj', subjets[0])
 
 
     def evalTagger(self, event, jets):
@@ -702,6 +765,10 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.fillBranch(prefix + "regressed_mass", fj.regressed_mass)
             self.out.fillBranch(prefix + "tau21", fj.tau2 / fj.tau1 if fj.tau1 > 0 else 99)
             self.out.fillBranch(prefix + "tau32", fj.tau3 / fj.tau2 if fj.tau2 > 0 else 99)
+            self.out.fillBranch(prefix + "tau1", fj.tau1)
+            self.out.fillBranch(prefix + "tau2", fj.tau2)
+            self.out.fillBranch(prefix + "tau3", fj.tau3)
+            self.out.fillBranch(prefix + "tau4", fj.tau4)
             self.out.fillBranch(prefix + "btagcsvv2", fj.btagCSVV2)
             try:
                 self.out.fillBranch(prefix + "btagjp", fj.btagJP)
@@ -927,7 +994,7 @@ class HeavyFlavBaseProducer(Module, object):
                 # sfBDT
                 self.out.fillBranch(prefix + "sfBDT", fj.sfBDT)
 
-                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                if self.isMC:
                     for hadtype in ['b', 'c']:
                         for hadidx in [1, 2]:
                             gp = fj.genBhadron[hadidx - 1] if hadtype=='b' else fj.genChadron[hadidx - 1]
@@ -955,3 +1022,23 @@ class HeavyFlavBaseProducer(Module, object):
                     self.out.fillBranch(prefix + "bpart50_sumpt", fj.bpart50_sumpt)
                     self.out.fillBranch(prefix + "cpart50_sumpt", fj.cpart50_sumpt)
                     self.out.fillBranch(prefix + "gpart50_sumpt", fj.gpart50_sumpt)
+
+                if self.isMC:
+                    self.out.fillBranch(prefix + "nMatchedInitHads", len(fj.genInitHadrons))
+                    self.out.fillBranch(prefix + "matchedInitHadsTau1", fj.matchedInitHadsTau1)
+                    self.out.fillBranch(prefix + "matchedInitHadsTau2", fj.matchedInitHadsTau2)
+                    self.out.fillBranch(prefix + "matchedInitHadsTau3", fj.matchedInitHadsTau3)
+                    self.out.fillBranch(prefix + "matchedInitHadsTau4", fj.matchedInitHadsTau4)
+                    for nj in [1, 2, 3]:
+                        subjets = getattr(fj, f"matchedInitHads_{nj}sj")
+                        for ij in range(1, nj+1):
+                            if subjets is not None:
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_pt", subjets[ij-1].pt)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_eta", subjets[ij-1].eta)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_phi", subjets[ij-1].phi)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_mass", subjets[ij-1].mass)
+                            else:
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_pt", -1)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_eta", -1)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_phi", -1)
+                                self.out.fillBranch(prefix + f"matchedInitHads_{nj}sj{ij}_mass", -1)

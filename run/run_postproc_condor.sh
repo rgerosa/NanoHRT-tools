@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -d /afs/cern.ch/user/${USER:0:1}/$USER ]; then
+  export HOME=/afs/cern.ch/user/${USER:0:1}/$USER # crucial on lxplus condor but cannot set on cmsconnect!
+fi
+export PATH=$HOME/.local/bin:$PATH
+
 workdir=`pwd`
 
 echo `hostname`
