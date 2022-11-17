@@ -48,7 +48,8 @@ class HeavyFlavBaseProducer(Module, object):
         self.year = int(kwargs['year'])
         self.jetType = kwargs.get('jetType', 'ak8').lower()
         self._jmeSysts = {'jec': False, 'jes': None, 'jes_source': '', 'jes_uncertainty_file_prefix': '',
-                          'jer': None, 'jmr': None, 'met_unclustered': None, 'smearMET': True, 'applyHEMUnc': False}
+                          'jer': None, 'jmr': None, 'met_unclustered': None, 'smearMET': True, 'applyHEMUnc': False,
+                          'jesr_extra_br': True}
         self._opts = {'sfbdt_threshold': -99,
                       'run_tagger': False, 'tagger_versions': ['V02b', 'V02c', 'V02d'],
                       'run_mass_regression': False, 'mass_regression_versions': ['V01a', 'V01b', 'V01c'],
@@ -60,7 +61,8 @@ class HeavyFlavBaseProducer(Module, object):
                 self._opts[k] = kwargs[k]
         self._needsJMECorr = any([self._jmeSysts['jec'], self._jmeSysts['jes'],
                                   self._jmeSysts['jer'], self._jmeSysts['jmr'],
-                                  self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc']])
+                                  self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc'],
+                                  self._jmeSysts['jesr_extra_br']])
 
         logger.info('Running %s channel for %s jets with JME systematics %s, other options %s',
                     self._channel, self.jetType, str(self._jmeSysts), str(self._opts))
@@ -274,6 +276,13 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.branch(prefix + "T_Wq_max_pdgId", "I")
                 self.out.branch(prefix + "T_Wq_min_pdgId", "I")
                 self.out.branch(prefix + "T_pt", "F")
+
+                # factors of JES/JER correction
+                if self._jmeSysts['jesr_extra_br']:
+                    self.out.branch(prefix + "jesUncFactorUp", "F")
+                    self.out.branch(prefix + "jesUncFactorDn", "F")
+                    self.out.branch(prefix + "jerSmearFactorUp", "F")
+                    self.out.branch(prefix + "jerSmearFactorDn", "F")
 
             if self._fill_sv:
                 # SV variables
@@ -888,6 +897,12 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "T_Wq_max_pdgId", wq1_pdgId)
                 self.out.fillBranch(prefix + "T_Wq_min_pdgId", wq2_pdgId)
                 self.out.fillBranch(prefix + "T_pt", fj.genT.pt if fj.genT else -1)
+
+                if self._jmeSysts['jesr_extra_br']:
+                    self.out.fillBranch(prefix + "jesUncFactorUp", fj.jesUncFactorUp)
+                    self.out.fillBranch(prefix + "jesUncFactorDn", fj.jesUncFactorDn)
+                    self.out.fillBranch(prefix + "jerSmearFactorUp", fj.jerSmearFactorUp)
+                    self.out.fillBranch(prefix + "jerSmearFactorDn", fj.jerSmearFactorDn)
 
             if self._fill_sv:
                 # SV variables

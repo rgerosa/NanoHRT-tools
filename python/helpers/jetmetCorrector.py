@@ -70,7 +70,7 @@ class JetMETCorrector(object):
 
     def __init__(
             self, year, jetType="AK4PFchs", jec=False, jes=None, jes_source=None, jes_uncertainty_file_prefix=None,
-            jer='nominal', jmr=None, met_unclustered=None, smearMET=True, applyHEMUnc=False):
+            jer='nominal', jmr=None, met_unclustered=None, smearMET=True, applyHEMUnc=False, jesr_extra_br=False):
         '''
         jec: re-apply jet energy correction (True|False)
         jes: Jet energy scale options
@@ -104,6 +104,7 @@ class JetMETCorrector(object):
         self.correctMET = (jetType == 'AK4PFchs')  # FIXME
         self.smearMET = smearMET
         self.applyHEMUnc = applyHEMUnc
+        self.jesr_extra_br = jesr_extra_br
 
         self.excludeJetsForMET = None
 
@@ -159,7 +160,7 @@ class JetMETCorrector(object):
 
     def beginJob(self):
         # set up JEC
-        if self.jec or self.jes in ['up', 'down'] or self.correctMET:
+        if self.jec or self.jes in ['up', 'down'] or self.correctMET or self.jesr_extra_br:
             for library in ["libCondFormatsJetMETObjects", "libPhysicsToolsNanoAODTools"]:
                 if library not in ROOT.gSystem.GetLibraries():
                     logger.info("Load Library '%s'" % library.replace("lib", ""))
@@ -185,7 +186,7 @@ class JetMETCorrector(object):
                                                                applyResidual=True)
 
         # JES uncertainty
-        if self.jes in ['up', 'down']:
+        if self.jes in ['up', 'down'] or self.jesr_extra_br:
             if not self.jes_source:
                 # total unc.
                 self.jesUncertaintyInputFileName = self.globalTag + "_Uncertainty_" + self.jetType + ".txt"
@@ -247,6 +248,8 @@ class JetMETCorrector(object):
 
     def correctJetAndMET(self, jets, lowPtJets=None, met=None, rawMET=None, defaultMET=None,
                          rho=None, genjets=[], isMC=True, runNumber=None):
+        assert (not isMC) or (self.jesr_extra_br and (self.jer == 'nominal' and self.jes == None)), "Must run jesr_extra_br=True in nominal."
+
         # for MET correction, use 'Jet' (corr_pt>15) and 'CorrT1METJet' (corr_pt<15) collections
         # Type-1 MET correction: https://github.com/cms-sw/cmssw/blob/master/JetMETCorrections/Type1MET/interface/PFJetMETcorrInputProducerT.h
         if met is None:
@@ -279,22 +282,30 @@ class JetMETCorrector(object):
             # set JER factor
             j._smearFactorNominal = 1
             j._smearFactor = 1
-            if isMC and self.jer is not None:
+            if isMC and (self.jer is not None or self.self.jesr_extra_br):
                 jerFactors = self.jetSmearer.getSmearValsPt(j, genjets, rho)
                 j._smearFactorNominal = _sf(jerFactors)
                 j._smearFactor = _sf(jerFactors, self.jer)
                 j.pt *= j._smearFactor
                 j.mass *= j._smearFactor
+                if self.jesr_extra_br:
+                    assert self.jer == 'nominal'
+                    j.jerSmearFactorUp = _sf(jerFactors, 'up') / j._smearFactorNominal
+                    j.jerSmearFactorDn = _sf(jerFactors, 'down') / j._smearFactorNominal
 
             # set JES uncertainty ( = varied-Pt / Pt)
             j._jesUncFactor = 1
-            if isMC and self.jes in ['up', 'down']:
+            if isMC and (self.jes in ['up', 'down'] or self.jesr_extra_br):
                 self.jesUncertainty.setJetPt(j.pt)  # corrected(+smeared) pt
                 self.jesUncertainty.setJetEta(j.eta)
                 delta = self.jesUncertainty.getUncertainty(True)
-                j._jesUncFactor = 1 + delta if self.jes == 'up' else 1 - delta
-                j.pt *= j._jesUncFactor
-                j.mass *= j._jesUncFactor
+                if self.jesr_extra_br:
+                    j.jesUncFactorUp = 1 + delta
+                    j.jesUncFactorDn = 1 - delta
+                else:
+                    j._jesUncFactor = 1 + delta if self.jes == 'up' else 1 - delta
+                    j.pt *= j._jesUncFactor
+                    j.mass *= j._jesUncFactor
 
             # set uncertainty due to HEM15/16 issue
             j._HEMUncFactor = 1
