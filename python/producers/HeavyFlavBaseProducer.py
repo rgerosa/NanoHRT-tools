@@ -93,7 +93,7 @@ class HeavyFlavBaseProducer(Module, object):
         else:
             raise RuntimeError('Jet type %s is not recognized!' % self.jetType)
 
-        self._fill_sv = self._channel in ('qcd', 'photon', 'inclusive') and self._opts['sfbdt_threshold'] > -99
+        self._fill_sv = self._channel in ('qcd', 'photon', 'higgs', 'inclusive') and self._opts['sfbdt_threshold'] > -99
 
         if self._needsJMECorr:
             self.jetmetCorr = JetMETCorrector(year=self.year, jetType="AK4PFchs", **self._jmeSysts)
@@ -323,7 +323,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.branch(prefix + "sfBDT", "F")
 
                 # bb/cc gen hadrons
-                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                if self.isMC and idx==(2 if self._channel == 'qcd' else 1) and self._channel != 'higgs':
                     for hadtype in ['b', 'c']:
                         for hadidx in [1, 2]:
                             self.out.branch(prefix + "gen{}hadron{}_pt".format(hadtype, hadidx), "F")
@@ -333,7 +333,7 @@ class HeavyFlavBaseProducer(Module, object):
                             self.out.branch(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), "I")
 
                 # last parton list
-                if self.isMC:
+                if self.isMC and self._channel != 'higgs':
                     for ptsuf in ['', '50']:
                         self.out.branch(prefix + "npart{}".format(ptsuf), "I")
                         self.out.branch(prefix + "nbpart{}".format(ptsuf), "I")
@@ -570,7 +570,7 @@ class HeavyFlavBaseProducer(Module, object):
             fj.genT, fj.dr_T = closest(fj, hadGenTops)
             fj.genLepT, fj.dr_LepT = closest(fj, lepGenTops)
 
-        if self._fill_sv:
+        if self._fill_sv and self._channel != 'higgs':
             # bb/cc matching
             # FIXME: only available for qcd & ggh(cc/bb) sample
             probe_fj = event.fatjets[1 if self._channel == 'qcd' else 0]
@@ -941,7 +941,7 @@ class HeavyFlavBaseProducer(Module, object):
                 # sfBDT
                 self.out.fillBranch(prefix + "sfBDT", fj.sfBDT)
 
-                if self.isMC and idx==(2 if self._channel == 'qcd' else 1):
+                if self.isMC and idx==(2 if self._channel == 'qcd' else 1) and self._channel != 'higgs':
                     for hadtype in ['b', 'c']:
                         for hadidx in [1, 2]:
                             gp = fj.genBhadron[hadidx - 1] if hadtype=='b' else fj.genChadron[hadidx - 1]
@@ -952,7 +952,7 @@ class HeavyFlavBaseProducer(Module, object):
                             fill_gp(prefix + "gen{}hadron{}_mass".format(hadtype, hadidx), gp.mass)
                             fill_gp(prefix + "gen{}hadron{}_pdgId".format(hadtype, hadidx), gp.pdgId)
 
-                if self.isMC:
+                if self.isMC and self._channel != 'higgs':
                     self.out.fillBranch(prefix + "npart", fj.npart)
                     self.out.fillBranch(prefix + "nbpart", fj.nbpart)
                     self.out.fillBranch(prefix + "ncpart", fj.ncpart)

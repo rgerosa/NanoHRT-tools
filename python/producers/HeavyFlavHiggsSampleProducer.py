@@ -31,6 +31,10 @@ class HiggsSampleProducer(HeavyFlavBaseProducer):
         sorted_fatjet = sorted(event.fatjets, key=lambda x: x.dr_H)
         sorted_fatjet = sorted_fatjet[:1] # only select the fatjet nearest to higgs
 
+        # match to SV
+        self.selectSV(event)
+        self.matchSVToFatJets(event, sorted_fatjet)
+
         # fill output branches
         self.fillBaseEventInfo(event)
         self.fillFatJetInfo(event, sorted_fatjet)

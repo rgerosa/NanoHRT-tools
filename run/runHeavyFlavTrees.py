@@ -59,7 +59,7 @@ def _process(args):
     channel = args.channel
     default_config['year'] = year
     default_config['channel'] = channel
-    if channel in ('qcd', 'photon'):
+    if channel in ('qcd', 'photon', 'higgs'):
         default_config['sfbdt_threshold'] = args.sfbdt
 
     if year in (2017, 2018):
