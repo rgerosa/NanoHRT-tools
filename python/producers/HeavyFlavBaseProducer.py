@@ -61,8 +61,7 @@ class HeavyFlavBaseProducer(Module, object):
                 self._opts[k] = kwargs[k]
         self._needsJMECorr = any([self._jmeSysts['jec'], self._jmeSysts['jes'],
                                   self._jmeSysts['jer'], self._jmeSysts['jmr'],
-                                  self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc'],
-                                  self._jmeSysts['jesr_extra_br']])
+                                  self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc']])
 
         logger.info('Running %s channel for %s jets with JME systematics %s, other options %s',
                     self._channel, self.jetType, str(self._jmeSysts), str(self._opts))
