@@ -165,6 +165,12 @@ class HeavyFlavBaseProducer(Module, object):
         self.out.branch("ht", "F")
         self.out.branch("met", "F")
         self.out.branch("metphi", "F")
+        if self._jmeSysts['jesr_extra_br']:
+            # HT with JES/JER correction
+            self.out.branch("ht_jesUncFactorUp", "F")
+            self.out.branch("ht_jesUncFactorDn", "F")
+            self.out.branch("ht_jerSmearFactorUp", "F")
+            self.out.branch("ht_jerSmearFactorDn", "F")
 
         # Large-R jets
         for idx in ([1, 2] if self._channel == 'qcd' else [1]):
@@ -432,6 +438,11 @@ class HeavyFlavBaseProducer(Module, object):
         event.ak4jets = [j for j in event._allJets if j.pt > 25 and abs(j.eta) < 2.4 and (
             j.jetId & 4) and closest(j, event.looseLeptons)[1] >= 0.4]
         event.ht = sum([j.pt for j in event.ak4jets])
+        if self._jmeSysts['jesr_extra_br']:
+            event.ht_jesUncFactorUp = sum([j.pt * j.jesUncFactorUp for j in event.ak4jets])
+            event.ht_jesUncFactorDn = sum([j.pt * j.jesUncFactorDn for j in event.ak4jets])
+            event.ht_jerSmearFactorUp = sum([j.pt * j.jerSmearFactorUp for j in event.ak4jets])
+            event.ht_jerSmearFactorDn = sum([j.pt * j.jerSmearFactorDn for j in event.ak4jets])
 
     def selectSV(self, event):
         event._allSV = Collection(event, "SV")
@@ -678,6 +689,11 @@ class HeavyFlavBaseProducer(Module, object):
 
         self.out.fillBranch("nlep", len(event.looseLeptons))
         self.out.fillBranch("ht", event.ht)
+        if self._jmeSysts['jesr_extra_br']:
+            self.out.fillBranch("ht_jesUncFactorUp", event.ht_jesUncFactorUp)
+            self.out.fillBranch("ht_jesUncFactorDn", event.ht_jesUncFactorDn)
+            self.out.fillBranch("ht_jerSmearFactorUp", event.ht_jerSmearFactorUp)
+            self.out.fillBranch("ht_jerSmearFactorDn", event.ht_jerSmearFactorDn)
         self.out.fillBranch("met", event.met.pt)
         self.out.fillBranch("metphi", event.met.phi)
 
@@ -918,7 +934,7 @@ class HeavyFlavBaseProducer(Module, object):
                     except IndexError:
                         # fill zeros if not enough subjets
                         for b in self.out._branches.keys():
-                            if b.startswith(prefix):
+                            if b.startswith(prefix_sj):
                                 self.out.fillBranch(b, 0)
                         continue
 
