@@ -165,7 +165,7 @@ class HeavyFlavBaseProducer(Module, object):
         self.out.branch("ht", "F")
         self.out.branch("met", "F")
         self.out.branch("metphi", "F")
-        if self._jmeSysts['jesr_extra_br']:
+        if self.isMC and self._jmeSysts['jesr_extra_br']:
             # HT with JES/JER correction
             self.out.branch("ht_jesUncFactorUp", "F")
             self.out.branch("ht_jesUncFactorDn", "F")
@@ -438,7 +438,7 @@ class HeavyFlavBaseProducer(Module, object):
         event.ak4jets = [j for j in event._allJets if j.pt > 25 and abs(j.eta) < 2.4 and (
             j.jetId & 4) and closest(j, event.looseLeptons)[1] >= 0.4]
         event.ht = sum([j.pt for j in event.ak4jets])
-        if self._jmeSysts['jesr_extra_br']:
+        if self.isMC and self._jmeSysts['jesr_extra_br']:
             event.ht_jesUncFactorUp = sum([j.pt * j.jesUncFactorUp for j in event.ak4jets])
             event.ht_jesUncFactorDn = sum([j.pt * j.jesUncFactorDn for j in event.ak4jets])
             event.ht_jerSmearFactorUp = sum([j.pt * j.jerSmearFactorUp for j in event.ak4jets])
@@ -689,7 +689,7 @@ class HeavyFlavBaseProducer(Module, object):
 
         self.out.fillBranch("nlep", len(event.looseLeptons))
         self.out.fillBranch("ht", event.ht)
-        if self._jmeSysts['jesr_extra_br']:
+        if self.isMC and self._jmeSysts['jesr_extra_br']:
             self.out.fillBranch("ht_jesUncFactorUp", event.ht_jesUncFactorUp)
             self.out.fillBranch("ht_jesUncFactorDn", event.ht_jesUncFactorDn)
             self.out.fillBranch("ht_jerSmearFactorUp", event.ht_jerSmearFactorUp)

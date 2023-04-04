@@ -680,7 +680,7 @@ def get_arg_parser():
         help='Merge output files of the same dataset and add cross section weight using the file specified in --weight-file. Default: %(default)s'
     )
     parser.add_argument('-w', '--weight-file',
-        default='samples/xsec.conf',
+        default='samples/xsec_2017.conf',
         help='File with xsec of each sample. If empty, xsec wgt will not be added. Default: %(default)s'
     )
     parser.add_argument('--merge',
