@@ -173,7 +173,7 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch("ht_jerSmearFactorDn", "F")
 
         # Large-R jets
-        for idx in ([1, 2] if self._channel == 'qcd' else [1]):
+        for idx in ([1, 2] if self._channel in ['qcd', 'mutagged'] else [1]):
             prefix = 'fj_%d_' % idx
 
             # fatjet kinematics
@@ -498,7 +498,8 @@ class HeavyFlavBaseProducer(Module, object):
                         'fj_2_sj1_sv1_pt': sj1_sv.pt,
                         'fj_2_sj2_sv1_pt': sj2_sv.pt,
                     }
-                    fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10))
+                    if hasattr(self, 'xgb'):
+                        fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10))
                     fj.sj12_masscor_dxysig = corrected_svmass(sj1_sv if sj1_sv.dxySig > sj2_sv.dxySig else sj2_sv)
 
     def loadGenHistory(self, event, fatjets):
@@ -705,16 +706,17 @@ class HeavyFlavBaseProducer(Module, object):
         return filler
 
     def fillFatJetInfo(self, event, fatjets):
-        for idx in ([1, 2] if self._channel == 'qcd' else [1]):
+        for idx in ([1, 2] if self._channel in ['qcd', 'mutagged'] else [1]):
             prefix = 'fj_%d_' % idx
-            fj = fatjets[idx - 1]
 
-            if not fj.is_qualified:
+            if len(fatjets) <= idx - 1 or not fatjets[idx - 1].is_qualified:
                 # fill zeros if fatjet fails probe selection
                 for b in self.out._branches.keys():
                     if b.startswith(prefix):
                         self.out.fillBranch(b, 0)
                 continue
+
+            fj = fatjets[idx - 1]
 
             # fatjet kinematics
             self.out.fillBranch(prefix + "is_qualified", fj.is_qualified)

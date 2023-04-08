@@ -24,6 +24,7 @@ cut_dict_ak8 = {
                ' Sum$(Muon_pt>20 && abs(Muon_eta)<2.4 && abs(Muon_dxy)<0.05 && abs(Muon_dz)<0.2 && Muon_looseId && Muon_miniPFRelIso_all<0.4) >= 2) && nFatJet>0',
     'inclusive': 'Sum$((Jet_pt>25 && abs(Jet_eta)<2.4 && (Jet_jetId & 2)) * Jet_pt)>300 && Sum$(FatJet_subJetIdx1>=0 && FatJet_subJetIdx2>=0 && FatJet_msoftdrop>10)>0',
     'higgs': 'nFatJet>0',
+    'mutagged': 'Sum$((Jet_pt>25 && abs(Jet_eta)<2.4 && (Jet_jetId & 2)) * Jet_pt)>200 && nFatJet>0',
 }
 cut_dict_ak15 = {
     'photon': 'Sum$(Photon_pt>200 && Photon_cutBased>=2 && Photon_electronVeto)>0 && nAK15Puppi>0',
@@ -59,7 +60,7 @@ def _process(args):
     channel = args.channel
     default_config['year'] = year
     default_config['channel'] = channel
-    if channel in ('qcd', 'photon', 'higgs'):
+    if channel in ('qcd', 'photon', 'higgs', 'mutagged'):
         default_config['sfbdt_threshold'] = args.sfbdt
 
     if year in (2017, 2018):
