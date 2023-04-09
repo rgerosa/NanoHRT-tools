@@ -19,10 +19,14 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
             prefix = 'fj_%d_' % idx
 
             # mu-tagged variables
-            self.out.branch(prefix + "sj1_mu_pt", "F")
-            self.out.branch(prefix + "sj2_mu_pt", "F")
+            self.out.branch(prefix + "nmu", "I")
             self.out.branch(prefix + "dimuon_pt", "F")
             self.out.branch(prefix + "dimuon_mass", "F")
+            self.out.branch(prefix + "is_sj_mutagged", "O")
+            self.out.branch(prefix + "sj1_mu_pt", "F")
+            self.out.branch(prefix + "sj2_mu_pt", "F")
+            self.out.branch(prefix + "dr_mu_sj1", "F")
+            self.out.branch(prefix + "dr_mu_sj2", "F")
 
             # SV variables
             self.out.branch(prefix + "nsv", "F")
@@ -47,7 +51,8 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
     def matchSoftMuonsToFatJets(self, event, fatjets):
         for fj in fatjets:
             # match soft muons to fatjet
-            drcut = min(0.4, 0.5 * deltaR(*fj.subjets)) if len(fj.subjets) == 2 else 0.4
+            # drcut = min(0.4, 0.5 * deltaR(*fj.subjets)) if len(fj.subjets) == 2 else 0.4
+            drcut = 0.4
             for sj in fj.subjets:
                 sj.mu_list = []
                 for mu in event.softMuons:
@@ -55,9 +60,20 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
                         sj.mu_list.append(mu)  
                 sj.nmu = len(sj.mu_list)
 
-            fj.is_mutagged = len(fj.subjets) == 2 and fj.subjets[0].nmu >= 1 and fj.subjets[1].nmu >= 1
-            if fj.is_mutagged:
-                fj.dimuon = sumP4(fj.subjets[0].mu_list[0], fj.subjets[1].mu_list[0])
+            fj.mu_list = []
+            for mu in event.softMuons:
+                if deltaR(mu, fj) < self._jetConeSize:
+                    fj.mu_list.append(mu)  
+            fj.nmu = len(fj.mu_list)
+
+            if fj.nmu >= 2: # mutagged criteria
+                fj.dimuon = sumP4(fj.mu_list[0], fj.mu_list[1])
+
+            # check if both subjets are mutagged (fatjet itself is first mutagged)
+            fj.is_sj_mutagged = len(fj.subjets) == 2 and fj.subjets[0].nmu >= 1 and fj.subjets[1].nmu >= 1 and len(set(fj.subjets[0].mu_list) | set(fj.subjets[1].mu_list)) >= 2
+
+            # if fj.nmu >= 2 and len(fj.subjets) == 2:
+            #     print(fj.nmu, fj.is_sj_mutagged, fj.subjets[0].nmu, fj.subjets[1].nmu, len(set(fj.subjets[0].mu_list) | set(fj.subjets[1].mu_list)))
 
 
     def matchSVToOnlyFatJets(self, event, fatjets):
@@ -81,10 +97,20 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
 
             fj = fatjets[idx - 1]
 
-            self.out.fillBranch(prefix + "sj1_mu_pt", fj.subjets[0].mu_list[0].pt)
-            self.out.fillBranch(prefix + "sj2_mu_pt", fj.subjets[1].mu_list[0].pt)
+            self.out.fillBranch(prefix + "nmu", fj.nmu)
             self.out.fillBranch(prefix + "dimuon_pt", fj.dimuon.pt())
             self.out.fillBranch(prefix + "dimuon_mass", fj.dimuon.M())
+            self.out.fillBranch(prefix + "is_sj_mutagged", fj.is_sj_mutagged)
+            if fj.is_sj_mutagged:
+                self.out.fillBranch(prefix + "sj1_mu_pt", fj.subjets[0].mu_list[0].pt)
+                self.out.fillBranch(prefix + "sj2_mu_pt", fj.subjets[1].mu_list[0].pt)
+                self.out.fillBranch(prefix + "dr_mu_sj1", min([deltaR(mu, fj.subjets[0]) for mu in fj.subjets[0].mu_list]))
+                self.out.fillBranch(prefix + "dr_mu_sj2", min([deltaR(mu, fj.subjets[1]) for mu in fj.subjets[1].mu_list]))
+            else:
+                self.out.fillBranch(prefix + "sj1_mu_pt", -99.)
+                self.out.fillBranch(prefix + "sj2_mu_pt", -99.)
+                self.out.fillBranch(prefix + "dr_mu_sj1", -99.)
+                self.out.fillBranch(prefix + "dr_mu_sj2", -99.)
 
             self.out.fillBranch(prefix + "nsv", len(fj.sv_list))
             self.out.fillBranch(prefix + "sv1_masscor", corrected_svmass(fj.sv_list[0]) if len(fj.sv_list) > 0 else -99.)
@@ -139,7 +165,7 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
 
         # check qualification
         for fj in probed_fatjets:
-            fj.is_qualified = (fj.is_mutagged and fj.pt >= 350 and abs(fj.eta) <= 2.4 and fj.msoftdrop >= 40)
+            fj.is_qualified = (fj.nmu >= 2 and fj.pt >= 350 and abs(fj.eta) <= 2.4 and fj.msoftdrop >= 40)
 
         if len(probed_fatjets) == 1 and not probed_fatjets[0].is_qualified:
             return False

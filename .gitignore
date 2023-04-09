@@ -4,3 +4,5 @@
 .pydevproject
 .settings/
 .DS_Store
+run/jobs_*
+__pycache__
