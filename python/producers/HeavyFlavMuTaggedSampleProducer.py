@@ -11,6 +11,7 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
     def __init__(self, **kwargs):
         super(MuTaggedSampleProducer, self).__init__(channel='mutagged', **kwargs)
         self._fill_sv = False  # not filling SV vars with standard way
+        self._doJetCleaning = False  # no cleaning with leptons
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         super(MuTaggedSampleProducer, self).beginFile(inputFile, outputFile, inputTree, wrappedOutputTree)

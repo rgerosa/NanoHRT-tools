@@ -62,6 +62,7 @@ class HeavyFlavBaseProducer(Module, object):
         self._needsJMECorr = any([self._jmeSysts['jec'], self._jmeSysts['jes'],
                                   self._jmeSysts['jer'], self._jmeSysts['jmr'],
                                   self._jmeSysts['met_unclustered'], self._jmeSysts['applyHEMUnc']])
+        self._doJetCleaning = True
 
         logger.info('Running %s channel for %s jets with JME systematics %s, other options %s',
                     self._channel, self.jetType, str(self._jmeSysts), str(self._opts))
@@ -433,10 +434,16 @@ class HeavyFlavBaseProducer(Module, object):
         event._allFatJets = sorted(event._allFatJets, key=lambda x: x.pt, reverse=True)  # sort by pt
 
         # select lepton-cleaned jets
-        event.fatjets = [fj for fj in event._allFatJets if fj.pt > 200 and abs(fj.eta) < 2.4 and (
-            fj.jetId & 2) and closest(fj, event.looseLeptons)[1] >= self._jetConeSize]
-        event.ak4jets = [j for j in event._allJets if j.pt > 25 and abs(j.eta) < 2.4 and (
-            j.jetId & 4) and closest(j, event.looseLeptons)[1] >= 0.4]
+        if self._doJetCleaning:
+            event.fatjets = [fj for fj in event._allFatJets if fj.pt > 200 and abs(fj.eta) < 2.4 and (
+                fj.jetId & 2) and closest(fj, event.looseLeptons)[1] >= self._jetConeSize]
+            event.ak4jets = [j for j in event._allJets if j.pt > 25 and abs(j.eta) < 2.4 and (
+                j.jetId & 4) and closest(j, event.looseLeptons)[1] >= 0.4]
+        else:
+            event.fatjets = [fj for fj in event._allFatJets if fj.pt > 200 and abs(fj.eta) < 2.4 and (
+                fj.jetId & 2)]
+            event.ak4jets = [j for j in event._allJets if j.pt > 25 and abs(j.eta) < 2.4 and (
+                j.jetId & 4)]
         event.ht = sum([j.pt for j in event.ak4jets])
         if self.isMC and self._jmeSysts['jesr_extra_br']:
             event.ht_jesUncFactorUp = sum([j.pt * j.jesUncFactorUp for j in event.ak4jets])
