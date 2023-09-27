@@ -7,6 +7,7 @@ class HiggsSampleProducer(HeavyFlavBaseProducer):
 
     def __init__(self, **kwargs):
         super(HiggsSampleProducer, self).__init__(channel='higgs', **kwargs)
+        # self._fill_sv = False # for QCD sample, do not fill SV info
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         super(HiggsSampleProducer, self).beginFile(inputFile, outputFile, inputTree, wrappedOutputTree)
