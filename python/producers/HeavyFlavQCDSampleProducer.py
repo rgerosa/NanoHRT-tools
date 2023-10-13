@@ -7,6 +7,7 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
     def __init__(self, **kwargs):
         super(QCDSampleProducer, self).__init__(channel='qcd', **kwargs)
+        self._requireSvCut = True  # require SV selection
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         super(QCDSampleProducer, self).beginFile(inputFile, outputFile, inputTree, wrappedOutputTree)
@@ -26,7 +27,7 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         if self._opts['sfbdt_threshold'] > -99:
             self.selectSV(event)
-            if len(event.secondary_vertices) < 2:
+            if self._requireSvCut and len(event.secondary_vertices) < 2:
                 return False
 
             for fj in probe_jets:

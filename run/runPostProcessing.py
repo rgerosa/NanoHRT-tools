@@ -7,6 +7,7 @@ import sys
 import json
 import re
 import shutil
+import tempfile
 
 import logging
 logging.basicConfig(level=logging.DEBUG, format='[%(asctime)s] %(levelname)s: %(message)s')
@@ -92,7 +93,10 @@ def add_weight_branch(file, xsec, lumi=1000., treename='Events', wgtbranch='xsec
         if lenVar is not None:
             b_lenVar.ResetAddress()
 
-    f = ROOT.TFile(file, 'UPDATE')
+    filetmp = os.path.join(tempfile.mkdtemp(), file.split('/')[-1])
+    import shutil
+    shutil.move(file, filetmp)
+    f = ROOT.TFile(filetmp, 'UPDATE')
     run_tree = f.Get('Runs')
     tree = f.Get(treename)
 
@@ -119,6 +123,7 @@ def add_weight_branch(file, xsec, lumi=1000., treename='Events', wgtbranch='xsec
 
     tree.Write(treename, ROOT.TObject.kOverwrite)
     f.Close()
+    shutil.move(filetmp, file)
 
 
 def load_dataset_file(dataset_file):
