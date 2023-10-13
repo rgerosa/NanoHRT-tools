@@ -7,7 +7,7 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
     def __init__(self, **kwargs):
         super(QCDSampleProducer, self).__init__(channel='qcd', **kwargs)
-        self._requireSvCut = True  # require SV selection
+        self._requireSvCut = False  # require SV selection
 
     def beginFile(self, inputFile, outputFile, inputTree, wrappedOutputTree):
         super(QCDSampleProducer, self).beginFile(inputFile, outputFile, inputTree, wrappedOutputTree)
