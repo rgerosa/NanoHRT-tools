@@ -72,6 +72,11 @@ def main(args):
     # run postprocessor
     inputfiles = args.files if len(args.files) else md['jobs'][args.jobid]['inputfiles']
     filepaths, allow_prefetch = xrd_prefix(inputfiles)
+
+    #### ================== ####
+    # hack to the filepaths (based on the intermediate nano files named in run_postproc_condor.sh)
+    filepaths = ['file:./nano_output/nano_%d.root' % i for i in range(len(filepaths))]
+    #### ================== ####
     print(filepaths)
     outputname = outputName(md, args.jobid)
     p = PostProcessor(outputDir='.',

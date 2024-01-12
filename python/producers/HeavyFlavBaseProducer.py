@@ -239,6 +239,10 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "btagDDCvLV2", "F")
             self.out.branch(prefix + "btagDeepB", "F")
             self.out.branch(prefix + "btagHbb", "F")
+            # Customized ParTV1 disc.
+            for n in ["probHbb", "probHcc", "probHss", "probHqq", "probHtauhtaue", "probHtauhtaum", "probHtauhtauh", "probQCDbb", "probQCDcc", "probQCDb", "probQCDc", "probQCDothers"]:
+                self.out.branch(prefix + "inclParTMDV1_" + n, "F")
+            self.out.branch(prefix + "inclParTMDV1_mass", "F")
 
             if self._opts['run_tagger']:
                 self.out.branch(prefix + "origParticleNetMD_XccVsQCD", "F")
@@ -860,6 +864,11 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "btagDDCvLV2", -1)
                 self.out.fillBranch(prefix + "btagDeepB", -1)
                 self.out.fillBranch(prefix + "btagHbb", -1)
+
+            # Custom ParTV1 disc
+            for n in ["probHbb", "probHcc", "probHss", "probHqq", "probHtauhtaue", "probHtauhtaum", "probHtauhtauh", "probQCDbb", "probQCDcc", "probQCDb", "probQCDc", "probQCDothers"]:
+                self.out.fillBranch(prefix + "inclParTMDV1_" + n, getattr(fj, "inclParTMDV1_" + n))
+            self.out.fillBranch(prefix + "inclParTMDV1_mass", fj.inclParTMDV1_mass)
 
             # matching variables
             if self.isMC:
