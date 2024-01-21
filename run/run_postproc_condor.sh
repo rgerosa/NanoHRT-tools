@@ -14,6 +14,9 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 ### --------------------------------###
 # Insert MiniAOD->NanoAOD production from https://github.com/colizz/Customized_NanoAOD
 
+if [ -d /afs/cern.ch/user/${USER:0:1}/$USER ]; then
+  export HOME=/afs/cern.ch/user/${USER:0:1}/$USER
+fi
 export SCRAM_ARCH=slc7_amd64_gcc700
 scram p CMSSW CMSSW_10_6_30
 cd CMSSW_10_6_30/src
