@@ -14,6 +14,16 @@ source /cvmfs/cms.cern.ch/cmsset_default.sh
 ### --------------------------------###
 # Insert MiniAOD->NanoAOD production from https://github.com/colizz/Customized_NanoAOD
 
+# check if the output file exists
+joboutputdir=$(cat $workdir/metadata.json | jq -r ".joboutputdir")
+output_samp=$(cat $workdir/metadata.json | jq -r ".jobs[$jobid].samp")
+output_idx=$(cat $workdir/metadata.json | jq -r ".jobs[$jobid].idx")
+outputfile=$joboutputdir/${output_samp}_${output_idx}_tree.root
+if [ -f $outputfile ]; then
+    echo "Output file already exists. Skipping the job."
+    exit 0
+fi
+
 if [ -d /afs/cern.ch/user/${USER:0:1}/$USER ]; then
   export HOME=/afs/cern.ch/user/${USER:0:1}/$USER
 fi
@@ -54,29 +64,30 @@ for i in "${!file_array[@]}"; do
     # do cmsRun depending on the year condition and MC/data
     echo "Start MiniAOD->NanoAOD production"
     echo ">>> year=$year, ismc=$ismc"
+    customise_commands='process.load("FWCore.MessageService.MessageLogger_cfi");process.MessageLogger.cerr.FwkReport.reportEvery=1000'
     if [[ $year == "2018" && $ismc == 1 ]]; then
-        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_upgrade2018_realistic_v16_L1v1 --step NANO --era Run2_2018,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_upgrade2018_realistic_v16_L1v1 --step NANO --era Run2_2018,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2017" && $ismc == 1 ]]; then
-        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mc2017_realistic_v10 --step NANO --era Run2_2017,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mc2017_realistic_v10 --step NANO --era Run2_2017,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2016" && $ismc == 1 ]]; then
-        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mcRun2_asymptotic_v17 --step NANO --era Run2_2016,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mcRun2_asymptotic_v17 --step NANO --era Run2_2016,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2015" && $ismc == 1 ]]; then
-        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mcRun2_asymptotic_preVFP_v11 --step NANO --era Run2_2016_HIPM,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --mc -n -1 --eventcontent NANOAODSIM --datatier NANOAODSIM --conditions 106X_mcRun2_asymptotic_preVFP_v11 --step NANO --era Run2_2016_HIPM,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeMC --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2018" && $ismc == 0 ]]; then
-        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2018,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2018,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2017" && $ismc == 0 ]]; then
-        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2017,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2017,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2016" && $ismc == 0 ]]; then
-        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2016,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2016,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     elif [[ $year == "2015" && $ismc == 0 ]]; then
-        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2016_HIPM,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --filein $filein --fileout file:nano_$i.root || exit $? ;
+        cmsDriver.py test_nanoTuples --data -n -1 --eventcontent NANOAOD --datatier NANOAOD --conditions 106X_dataRun2_v37 --step NANO --era Run2_2016_HIPM,run2_nanoAOD_106Xv2 --customise PhysicsTools/NanoTuples/nanoTuples_cff.nanoTuples_customizeData --customise_commands $customise_commands --filein $filein --fileout file:nano_$i.root || exit $? ;
 
     else
         echo "Error: year condition is not 2016APV, 2016, 2017, or 2018"
