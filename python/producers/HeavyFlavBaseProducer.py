@@ -240,9 +240,10 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "btagDeepB", "F")
             self.out.branch(prefix + "btagHbb", "F")
             # Customized ParTV1 disc.
-            for n in ["probHbb", "probHcc", "probHss", "probHqq", "probHtauhtaue", "probHtauhtaum", "probHtauhtauh", "probQCDbb", "probQCDcc", "probQCDb", "probQCDc", "probQCDothers"]:
-                self.out.branch(prefix + "inclParTMDV1_" + n, "F")
-            self.out.branch(prefix + "inclParTMDV1_mass", "F")
+            for n in ['probHbb', 'probHcc', 'probHss', 'probHqq', 'probHbc', 'probHbs', 'probHcs', 'probHgg', 'probHee', 'probHmm', 'probHtauhtaue', 'probHtauhtaum', 'probHtauhtauh', 
+                      'probQCDbb', 'probQCDcc', 'probQCDb', 'probQCDc', 'probQCDothers', 
+                      'resonanceMassCorr', 'visiableMassCorr']:
+                self.out.branch(prefix + "inclParTMDV2_" + n, "F")
 
             if self._opts['run_tagger']:
                 self.out.branch(prefix + "origParticleNetMD_XccVsQCD", "F")
@@ -866,9 +867,10 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "btagHbb", -1)
 
             # Custom ParTV1 disc
-            for n in ["probHbb", "probHcc", "probHss", "probHqq", "probHtauhtaue", "probHtauhtaum", "probHtauhtauh", "probQCDbb", "probQCDcc", "probQCDb", "probQCDc", "probQCDothers"]:
-                self.out.fillBranch(prefix + "inclParTMDV1_" + n, getattr(fj, "inclParTMDV1_" + n))
-            self.out.fillBranch(prefix + "inclParTMDV1_mass", fj.inclParTMDV1_mass)
+            for n in ['probHbb', 'probHcc', 'probHss', 'probHqq', 'probHbc', 'probHbs', 'probHcs', 'probHgg', 'probHee', 'probHmm', 'probHtauhtaue', 'probHtauhtaum', 'probHtauhtauh', 
+                      'probQCDbb', 'probQCDcc', 'probQCDb', 'probQCDc', 'probQCDothers', 
+                      'resonanceMassCorr', 'visiableMassCorr']:
+                self.out.fillBranch(prefix + "inclParTMDV2_" + n, getattr(fj, "inclParTMDV2_" + n))
 
             # matching variables
             if self.isMC:

@@ -28,12 +28,13 @@ if [ -d /afs/cern.ch/user/${USER:0:1}/$USER ]; then
   export HOME=/afs/cern.ch/user/${USER:0:1}/$USER
 fi
 export SCRAM_ARCH=slc7_amd64_gcc700
-scram p CMSSW CMSSW_10_6_30
-cd CMSSW_10_6_30/src
+scram p CMSSW CMSSW_10_6_31
+cd CMSSW_10_6_31/src
 eval `scram runtime -sh`
 
-git clone https://github.com/colizz/Customized_NanoAOD.git -b stable-202401 .
+git clone https://github.com/colizz/NanoTuples.git PhysicsTools/NanoTuples -b dev-part-UL
 ./PhysicsTools/NanoTuples/scripts/install_onnxruntime.sh
+wget https://coli.web.cern.ch/coli/tmp/.240120-181907_ak8_stage2/model.onnx -O $CMSSW_BASE/src/PhysicsTools/NanoTuples/data/InclParticleTransformer-MD/ak8/V02/model.onnx
 scram b clean && scram b -j4
 
 mkdir -p $workdir/nano_output
@@ -98,7 +99,7 @@ for i in "${!file_array[@]}"; do
 done
 
 cd $workdir
-rm -r CMSSW_10_6_30
+rm -rf CMSSW_10_6_31
 ### --------------------------------###
 
 tar -xf CMSSW*.tar.gz --warning=no-timestamp
