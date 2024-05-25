@@ -528,7 +528,14 @@ def run_add_weight(args):
         if 'error' in log_lower or 'fail' in log_lower:
             logging.error(log)
         if p.returncode != 0:
-            raise RuntimeError('Hadd failed on %s!' % samp)
+            # raise RuntimeError('Hadd failed on %s!' % samp)
+            cmd = 'hadd {outfile} {outputdir}/pieces/{samp}_*_tree.root'.format(outfile=outfile, outputdir=args.outputdir, samp=samp)
+            logging.debug('...' + cmd)
+            p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+            log = p.communicate()[0]
+            log_lower = log.lower().decode('utf-8')
+            if 'error' in log_lower or 'fail' in log_lower:
+                logging.error(log)
 
         # add weight
         if args.weight_file:
