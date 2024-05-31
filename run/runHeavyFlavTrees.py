@@ -36,10 +36,14 @@ cut_dict_ak15 = {
 }
 
 golden_json = {
-    2015: 'Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
-    2016: 'Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
-    2017: 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
-    2018: 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
+    '2015': 'Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
+    '2016': 'Cert_271036-284044_13TeV_Legacy2016_Collisions16_JSON.txt',
+    '2017': 'Cert_294927-306462_13TeV_UL2017_Collisions17_GoldenJSON.txt',
+    '2018': 'Cert_314472-325175_13TeV_Legacy2018_Collisions18_JSON.txt',
+    '2022preEE': 'Cert_Collisions2022_355100_362760_Golden.json',
+    '2022postEE': 'Cert_Collisions2022_355100_362760_Golden.json',
+    '2023preBPIX': 'Cert_Collisions2023_366442_370790_Golden.json',
+    '2023postBPIX': 'Cert_Collisions2023_366442_370790_Golden.json'
 }
 
 
@@ -56,27 +60,29 @@ def _process(args):
             default_config['mass_regression_versions'] = ['ak8V01a', 'ak8V01b', 'ak8V01c']
         logging.info('Will run mass regression version(s): %s' % ','.join(default_config['mass_regression_versions']))
 
-    year = int(args.year)
+    year = args.year
     channel = args.channel
     default_config['year'] = year
     default_config['channel'] = channel
     if channel in ('qcd', 'photon', 'higgs'):
         default_config['sfbdt_threshold'] = args.sfbdt
 
-    if year in (2017, 2018):
+    if year in ('2017', '2018'):
         args.weight_file = 'samples/xsec_2017.conf'
+    if year in ('2022preEE', '2022postEE', '2023preBPIX', '2023postBPIX'):
+        args.weight_file = 'samples/xsec_run3.conf'
 
-    basename = os.path.basename(args.outputdir) + '_' + args.jet_type + '_' + channel + '_' + str(year)
+    basename = os.path.basename(args.outputdir) + '_' + args.jet_type + '_' + channel + '_' + year
     args.outputdir = os.path.join(os.path.dirname(args.outputdir), basename, 'data' if args.run_data else 'mc')
     args.jobdir = os.path.join('jobs_%s' % basename, 'data' if args.run_data else 'mc')
 
     if args.run_data:
-        args.datasets = '%s/%s_%d_DATA.yaml' % (args.sample_dir, channel, year)
+        args.datasets = '%s/%s_%s_DATA.yaml' % (args.sample_dir, channel, year)
         args.extra_transfer = os.path.expandvars(
             '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/JSON/%s' % golden_json[year])
         args.json = golden_json[year]
     else:
-        args.datasets = '%s/%s_%d_MC.yaml' % (args.sample_dir, channel, year)
+        args.datasets = '%s/%s_%s_MC.yaml' % (args.sample_dir, channel, year)
 
     if args.jet_type == 'ak15':
         args.cut = cut_dict_ak15[channel]
@@ -84,11 +90,16 @@ def _process(args):
         args.cut = cut_dict_ak8[channel]
 
     args.imports = [('PhysicsTools.NanoHRTTools.producers.HeavyFlavSFTreeProducer', 'heavyFlavSFTreeFromConfig')]
-    if not args.run_data:
-        args.imports.extend([('PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer',
-                              'puWeight_UL2016' if year == 2015 else 'puWeight_UL%d' % year),
-                             ('PhysicsTools.NanoHRTTools.producers.topPtWeightProducer', 'topPtWeight')])
-
+    if not args.run_data:        
+        if year in ('2016', '2017', '2018'):            
+            args.imports.extend([('PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer',
+                                  'puWeight_UL%s'%(year)),
+                                 ('PhysicsTools.NanoHRTTools.producers.topPtWeightProducer', 'topPtWeight')])
+        if year in ('2022preEE', '2022postEE', '2023preBPIX', '2023postBPIX'):
+            args.imports.extend([('PhysicsTools.NanoAODTools.postprocessing.modules.common.puWeightProducer',
+                                  'puWeight_%s'%(year)),
+                                 ('PhysicsTools.NanoHRTTools.producers.topPtWeightProducer', 'topPtWeight')])
+                                
     # data, or just nominal MC
     if args.run_data or not args.run_syst:
         cfg = copy.deepcopy(default_config)
@@ -181,8 +192,9 @@ def main():
     parser.add_argument('--year',
                         type=str,
                         required=True,
-                        help='Year: 2015 (2016 preVFP), 2016 (2016 postVFP), 2017, 2018, or comma separated list e.g., `2016,2017,2018`'
+                        help='Year: 2015 (2016 preVFP), 2016 (2016 postVFP), 2017, 2018, 2022, 2023 or comma separated list e.g., `2016,2017,2018,2022,2023`'
                         )
+    
 
     parser.add_argument('--sample-dir',
                         type=str,

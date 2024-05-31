@@ -456,27 +456,33 @@ def submit(args, configs):
             shutil.copy2(f, args.jobdir)
     shutil.copy2(macrofile, args.jobdir)
     files_to_transfer = [os.path.abspath(f) for f in files_to_transfer]
+    ## proxy file
+    proxyfile='x509up_u%d'%(os.getuid())
+    shutil.copy2('/tmp/'+proxyfile,args.jobdir)
+    files_to_transfer.append("$(Proxy_path)")
 
     condordesc = '''\
 universe              = vanilla
+Proxy_filename        = {proxyfile}
+Proxy_path            = {jobdir}/$(Proxy_filename)
 requirements          = (Arch == "X86_64") && (OpSys == "LINUX")
+MY.WantOS             = "el8"
 request_memory        = {request_memory}
 request_disk          = 10000000
 executable            = {scriptfile}
-arguments             = $(jobid)
+arguments             = $(jobid) $(Proxy_filename)
 transfer_input_files  = {files_to_transfer}
 output                = {jobdir}/$(jobid).out
 error                 = {jobdir}/$(jobid).err
 log                   = {jobdir}/$(jobid).log
-use_x509userproxy     = true
 Should_Transfer_Files = YES
 initialdir            = {initialdir}
 WhenToTransferOutput  = ON_EXIT
 want_graceful_removal = true
 on_exit_remove        = (ExitBySignal == False) && (ExitCode == 0)
-on_exit_hold          = ( (ExitBySignal == True) || (ExitCode != 0) )
+on_exit_hold          = ((ExitBySignal == True) || (ExitCode != 0))
 on_exit_hold_reason   = strcat("Job held by ON_EXIT_HOLD due to ", ifThenElse((ExitBySignal == True), "exit by signal", strcat("exit code ",ExitCode)), ".")
-periodic_release      = (NumJobStarts < 3) && ((CurrentTime - EnteredCurrentStatus) > 10*60)
+-periodic_release     = (NumJobStarts < 3) && ((CurrentTime - EnteredCurrentStatus) > 10*60)
 {transfer_output}
 {site}
 {maxruntime}
@@ -494,6 +500,7 @@ queue jobid from {jobids_file}
            maxruntime='+MaxRuntime = %s' % args.max_runtime if args.max_runtime else '',
            request_memory=args.request_memory,
            condor_extras=args.condor_extras,
+           proxyfile=proxyfile
     )
     condorfile = os.path.join(args.jobdir, 'submit.cmd')
     with open(condorfile, 'w') as f:

@@ -51,8 +51,10 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
         self.fillBaseEventInfo(event)
         self.fillFatJetInfo(event, probe_jets)
 
-        if self.year <= 2016:
+        if self.year in ('2015','2016'):
             self.out.fillBranch("passHTTrig", event.HLT_PFHT900)
+        elif self.year in ('2017','2018'):
+            self.out.fillBranch("passHTTrig", event.HLT_PFHT1050)
         else:
             self.out.fillBranch("passHTTrig", event.HLT_PFHT1050)
 
@@ -60,6 +62,10 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def QCDTree_2016(): return QCDSampleProducer(year=2016)
-def QCDTree_2017(): return QCDSampleProducer(year=2017)
-def QCDTree_2018(): return QCDSampleProducer(year=2018)
+def QCDTree_2016(): return QCDSampleProducer(year='2016')
+def QCDTree_2017(): return QCDSampleProducer(year='2017')
+def QCDTree_2018(): return QCDSampleProducer(year='2018')
+def QCDTree_2022preEE(): return QCDSampleProducer(year='2022preEE')
+def QCDTree_2022postEE(): return QCDSampleProducer(year='2022postEE')
+def QCDTree_2023preBPIX(): return QCDSampleProducer(year='2023preBPIX')
+def QCDTree_2023postBPIX(): return QCDSampleProducer(year='2023postBPIX')

@@ -35,8 +35,7 @@ def _sf(vals, syst='nominal'):
 class JetCorrector(object):
 
     def __init__(self, globalTag, jetType, jecPath, applyResidual=True):
-        self.jecLevels = ['L2Relative', 'L3Absolute'] if 'Puppi' in jetType else [
-            'L1FastJet', 'L2Relative', 'L3Absolute']
+        self.jecLevels = ['L1FastJet', 'L2Relative', 'L3Absolute']
         if applyResidual:
             self.jecLevels += ['L2L3Residual']
         self.vPar = ROOT.vector(ROOT.JetCorrectorParameters)()
@@ -109,7 +108,7 @@ class JetMETCorrector(object):
         self.excludeJetsForMET = None
 
         # set up tags for each year
-        if self.year == 2015:
+        if self.year == '2015':
             # hack, actually UL2016 preVFP (APV)
             self.globalTag = 'Summer19UL16APV_V7_MC'
             self.jerTag = 'Summer20UL16APV_JRV3_MC'
@@ -120,7 +119,7 @@ class JetMETCorrector(object):
                 (272007, 'Summer19UL16APV_RunBCD_V7_DATA'),
                 (276831, 'Summer19UL16APV_RunEF_V7_DATA'),
             )
-        elif self.year == 2016:
+        elif self.year == '2016':
             # hack, actually UL2016 postVFP
             self.globalTag = 'Summer19UL16_V7_MC'
             self.jerTag = 'Summer20UL16_JRV3_MC'
@@ -130,7 +129,7 @@ class JetMETCorrector(object):
                 # (start run number (inclusive), 'tag name')
                 (277772, 'Summer19UL16_RunFGH_V7_DATA'),
             )
-        elif self.year == 2017:
+        elif self.year == '2017':
             self.globalTag = 'Summer19UL17_V6_MC'
             self.jerTag = 'Summer19UL17_JRV2_MC'
             self.dataTags = (
@@ -143,7 +142,7 @@ class JetMETCorrector(object):
                 (303435, 'Summer19UL17_RunE_V6_DATA'),
                 (304911, 'Summer19UL17_RunF_V6_DATA'),
             )
-        elif self.year == 2018:
+        elif self.year == '2018':
             self.globalTag = 'Summer19UL18_V5_MC'
             self.jerTag = 'Summer19UL18_JRV2_MC'
             self.dataTags = (
@@ -154,6 +153,37 @@ class JetMETCorrector(object):
                 (316998, 'Summer19UL18_RunB_V5_DATA'),
                 (319313, 'Summer19UL18_RunC_V5_DATA'),
                 (320394, 'Summer19UL18_RunD_V5_DATA'),
+            )
+        elif self.year == '2022preEE':
+            self.globalTag = 'Summer22_22Sep2023_V2_MC'
+            self.jerTag = 'Summer22_22Sep2023_JRV1_MC'
+            self.dataTags = (
+                # set the name of the tarball with a dummy run number
+                (0, 'Summer22_22Sep2023_RunCD_V2_DATA'),
+            )
+        elif self.year == '2022postEE':
+            self.globalTag = 'Summer22EE_22Sep2023_V2_MC'
+            self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
+            self.dataTags = (
+                # set the name of the tarball with a dummy run number
+                (359356, 'Summer22EE_22Sep2023_RunE_V2_DATA'),
+                (360381, 'Summer22EE_22Sep2023_RunF_V2_DATA'),
+                (362365, 'Summer22EE_22Sep2023_RunG_V2_DATA'),
+            )
+        elif self.year == '2023preBPIX':
+            self.globalTag = 'Summer23Prompt23_V1_MC'
+            self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
+            self.dataTags = (
+                # set the name of the tarball with a dummy run number
+                (0, 'Summer23Prompt23_RunCv123_V1_DATA'),
+                (367770, 'Summer23Prompt23_RunCv4_V1_DATA'),
+            )
+        elif self.year == '2023postBPIX':
+            self.globalTag = 'Summer23BPixPrompt23_V1_MC'
+            self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
+            self.dataTags = (
+                # set the name of the tarball with a dummy run number
+                (0, 'Summer23BPixPrompt23_RunD_V1_DATA'),
             )
         else:
             raise RuntimeError('Invalid year: %s' % (str(self.year)))
