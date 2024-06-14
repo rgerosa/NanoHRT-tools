@@ -460,13 +460,13 @@ def submit(args, configs):
     proxyfile='x509up_u%d'%(os.getuid())
     shutil.copy2('/tmp/'+proxyfile,args.jobdir)
     files_to_transfer.append("$(Proxy_path)")
-
+    os_version = "el8" if "el8" in os.environ['SCRAM_ARCH'] else "el9"
     condordesc = '''\
 universe              = vanilla
 Proxy_filename        = {proxyfile}
 Proxy_path            = {jobdir}/$(Proxy_filename)
 requirements          = (Arch == "X86_64") && (OpSys == "LINUX")
-MY.WantOS             = "el8"
+MY.WantOS             = "{os_version}"
 request_memory        = {request_memory}
 request_disk          = 10000000
 executable            = {scriptfile}
@@ -500,7 +500,8 @@ queue jobid from {jobids_file}
            maxruntime='+MaxRuntime = %s' % args.max_runtime if args.max_runtime else '',
            request_memory=args.request_memory,
            condor_extras=args.condor_extras,
-           proxyfile=proxyfile
+           proxyfile=proxyfile,
+           os_version=os_version
     )
     condorfile = os.path.join(args.jobdir, 'submit.cmd')
     with open(condorfile, 'w') as f:

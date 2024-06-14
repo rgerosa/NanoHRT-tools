@@ -172,18 +172,18 @@ class JetMETCorrector(object):
             )
         elif self.year == '2023preBPIX':
             self.globalTag = 'Summer23Prompt23_V1_MC'
-            self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
+            self.jerTag = 'Summer23Prompt23_RunCv1234_JRV1_MC'
             self.dataTags = (
                 # set the name of the tarball with a dummy run number
-                (0, 'Summer23Prompt23_RunCv123_V1_DATA'),
-                (367770, 'Summer23Prompt23_RunCv4_V1_DATA'),
+                (366442, 'Summer23Prompt23_RunCv123_V1_DATA'),
+                (367758, 'Summer23Prompt23_RunCv4_V1_DATA'),
             )
         elif self.year == '2023postBPIX':
             self.globalTag = 'Summer23BPixPrompt23_V1_MC'
-            self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
+            self.jerTag = 'Summer23BPixPrompt23_RunD_JRV1_MC'
             self.dataTags = (
                 # set the name of the tarball with a dummy run number
-                (0, 'Summer23BPixPrompt23_RunD_V1_DATA'),
+                (367770, 'Summer23BPixPrompt23_RunD_V1_DATA'),
             )
         else:
             raise RuntimeError('Invalid year: %s' % (str(self.year)))
