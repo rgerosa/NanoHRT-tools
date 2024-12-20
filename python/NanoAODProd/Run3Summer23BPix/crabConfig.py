@@ -19,7 +19,7 @@ config.Data.publication   = True
 ## Site
 config.Site.storageSite   = 'T2_US_UCSD'
 
-from PhysicsTools.NanoHRTTools.NanoAODProd.Run3Summer22EE.samples import AddAllSamples
+from PhysicsTools.NanoHRTTools.NanoAODProd.Run3Summer23BPix.samples import AddAllSamples
 samples = {};
 AddAllSamples(samples);
 dset = os.getcwd().replace(os.path.dirname(os.getcwd())+'/','')
