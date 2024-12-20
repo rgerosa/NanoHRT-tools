@@ -34,6 +34,8 @@ if __name__ == '__main__':
             sample_module.AddGluGluHHTo4BSamples(samples_dict);
         elif "gH2b" in args.sample_type:
             sample_module.AddGluGluHToBBSamples(samples_dict);
+        elif "Data" in args.sample_type:
+            sample_module.AddDataSamples(samples_dict);
         else:
             sys.exit("sample type not found --> exit")
             
