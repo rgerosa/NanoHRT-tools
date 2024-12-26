@@ -45,6 +45,10 @@ class HiggsSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def HiggsTree_2016(): return HiggsSampleProducer(year=2016)
-def HiggsTree_2017(): return HiggsSampleProducer(year=2017)
-def HiggsTree_2018(): return HiggsSampleProducer(year=2018)
+def HiggsTree_2016(): return HiggsSampleProducer(year='2016')
+def HiggsTree_2017(): return HiggsSampleProducer(year='2017')
+def HiggsTree_2018(): return HiggsSampleProducer(year='2018')
+def HiggsTree_2022preEE(): return HiggsSampleProducer(year='2022preEE')
+def HiggsTree_2022postEE(): return HiggsSampleProducer(year='2022postEE')
+def HiggsTree_2023preBPIX(): return HiggsSampleProducer(year='2023preBPIX')
+def HiggsTree_2023postBPIX(): return HiggsSampleProducer(year='2023postBPIX')

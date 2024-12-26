@@ -79,6 +79,10 @@ class PhotonSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def PhotonTree_2016(): return PhotonSampleProducer(year=2016)
-def PhotonTree_2017(): return PhotonSampleProducer(year=2017)
-def PhotonTree_2018(): return PhotonSampleProducer(year=2018)
+def PhotonTree_2016(): return PhotonSampleProducer(year='2016')
+def PhotonTree_2017(): return PhotonSampleProducer(year='2017')
+def PhotonTree_2018(): return PhotonSampleProducer(year='2018')
+def PhotonTree_2022preEE(): return PhotonSampleProducer(year='2022preEE')
+def PhotonTree_2022postEE(): return PhotonSampleProducer(year='2022postEE')
+def PhotonTree_2023preBPIX(): return PhotonSampleProducer(year='2023preBPIX')
+def PhotonTree_2023postBPIX(): return PhotonSampleProducer(year='2023postBPIX')

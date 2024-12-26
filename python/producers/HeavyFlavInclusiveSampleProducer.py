@@ -103,6 +103,10 @@ class InclusiveSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def InclusiveTree_2016(): return InclusiveSampleProducer(year=2016)
-def InclusiveTree_2017(): return InclusiveSampleProducer(year=2017)
-def InclusiveTree_2018(): return InclusiveSampleProducer(year=2018)
+def InclusiveTree_2016(): return InclusiveSampleProducer(year='2016')
+def InclusiveTree_2017(): return InclusiveSampleProducer(year='2017')
+def InclusiveTree_2018(): return InclusiveSampleProducer(year='2018')
+def InclusiveTree_2022preEE(): return InclusiveSampleProducer(year='2022preEE')
+def InclusiveTree_2022postEE(): return InclusiveSampleProducer(year='2022postEE')
+def InclusiveTree_2023preBPIX(): return InclusiveSampleProducer(year='2023preBPIX')
+def InclusiveTree_2023postBPIX(): return InclusiveSampleProducer(year='2023postBPIX')

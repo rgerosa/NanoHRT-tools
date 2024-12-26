@@ -76,6 +76,10 @@ class SingleLepSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def MuonTree_2016(): return SingleLepSampleProducer(year=2016)
-def MuonTree_2017(): return SingleLepSampleProducer(year=2017)
-def MuonTree_2018(): return SingleLepSampleProducer(year=2018)
+def MuonTree_2016(): return SingleLepSampleProducer(year='2016')
+def MuonTree_2017(): return SingleLepSampleProducer(year='2017')
+def MuonTree_2018(): return SingleLepSampleProducer(year='2018')
+def MuonTree_2022preEE(): return SingleLepSampleProducer(year='2022preEE')
+def MuonTree_2022postEE(): return SingleLepSampleProducer(year='2022postEE')
+def MuonTree_2023preBPIX(): return SingleLepSampleProducer(year='2023preBPIX')
+def MuonTree_2023postBPIX(): return SingleLepSampleProducer(year='2023postBPIX')

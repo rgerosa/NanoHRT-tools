@@ -9,11 +9,19 @@ import logging
 logging.basicConfig(level=logging.INFO, format='[%(asctime)s] %(levelname)s: %(message)s')
 
 hrt_cfgname = 'heavyFlavSFTree_cfg.json'
+
 default_config = {'sfbdt_threshold': -99,
-                  'run_tagger': False, 'tagger_versions': ['V02b', 'V02c', 'V02d'],
-                  'run_mass_regression': False, 'mass_regression_versions': ['V01a', 'V01b', 'V01c'],
-                  'jec': False, 'jes': None, 'jes_source': '', 'jes_uncertainty_file_prefix': '',
-                  'jer': 'nominal', 'jmr': None, 'met_unclustered': None, 'smearMET': False, 'applyHEMUnc': False,
+                  'run_tagger': False,
+                  'tagger_versions': ['V02b', 'V02c', 'V02d'],
+                  'run_mass_regression': False,
+                  'mass_regression_versions': ['V01a', 'V01b', 'V01c'],
+                  'jec': False,
+                  'jes': None,
+                  'jes_source': '',
+                  'jes_uncertainty_file_prefix': '',
+                  'jer': 'nominal',
+                  'jmr': None,
+                  'met_unclustered': None, 'smearMET': False, 'applyHEMUnc': False,
                   'jesr_extra_br': True}
 
 cut_dict_ak8 = {

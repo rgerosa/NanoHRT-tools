@@ -76,6 +76,10 @@ class MuonSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def MuonTree_2016(): return MuonSampleProducer(year=2016)
-def MuonTree_2017(): return MuonSampleProducer(year=2017)
-def MuonTree_2018(): return MuonSampleProducer(year=2018)
+def MuonTree_2016(): return MuonSampleProducer(year='2016')
+def MuonTree_2017(): return MuonSampleProducer(year='2017')
+def MuonTree_2018(): return MuonSampleProducer(year='2018')
+def MuonTree_2022preEE(): return MuonSampleProducer(year='2022preEE')
+def MuonTree_2022postEE(): return MuonSampleProducer(year='2022postEE')
+def MuonTree_2023preBPIX(): return MuonSampleProducer(year='2023preBPIX')
+def MuonTree_2023postBPIX(): return MuonSampleProducer(year='2023postBPIX')

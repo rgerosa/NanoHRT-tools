@@ -221,7 +221,6 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "ParticleNet_HbbvsQCD", "F")
             self.out.branch(prefix + "ParticleNet_HccvsQCD", "F")
             self.out.branch(prefix + "ParticleNet_H4qvsQCD", "F")
-
                         
             self.out.branch(prefix + "ParticleNetMD_Xbb", "F")
             self.out.branch(prefix + "ParticleNetMD_Xcc", "F")
@@ -241,6 +240,22 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "ParticleNet_massCorr", "F")
             self.out.branch(prefix + "ParticleNet_mass", "F")
 
+            self.out.branch(prefix + "GlobalParT3_Xbb", "F")
+            self.out.branch(prefix + "GlobalParT3_Xcc", "F")
+            self.out.branch(prefix + "GlobalParT3_Xcs", "F")
+            self.out.branch(prefix + "GlobalParT3_Xqq", "F")
+            self.out.branch(prefix + "GlobalParT3_Xtauhtaue", "F")
+            self.out.branch(prefix + "GlobalParT3_Xtauhtaum", "F")
+            self.out.branch(prefix + "GlobalParT3_Xtauhtauh", "F")
+            self.out.branch(prefix + "GlobalParT3_TopbWqq", "F")
+            self.out.branch(prefix + "GlobalParT3_TopbWq", "F")
+            self.out.branch(prefix + "GlobalParT3_TopbWev", "F")
+            self.out.branch(prefix + "GlobalParT3_TopbWmv", "F")
+            self.out.branch(prefix + "GlobalParT3_TopbWtauhv", "F")
+            self.out.branch(prefix + "GlobalParT3_QCD", "F")
+            self.out.branch(prefix + "GlobalParT3_massCorr", "F")
+            self.out.branch(prefix + "GlobalParT3_massCorrGen", "F")
+            
             # Additional tagger scores from NanoAODv9
             self.out.branch(prefix + "DeepAK8MD_HbbvsQCD", "F")
             self.out.branch(prefix + "DeepAK8MD_H4qvsQCD", "F")
@@ -663,7 +678,7 @@ class HeavyFlavBaseProducer(Module, object):
                 j.pn_XtmVsQCD = 0.
                 j.pn_XteVsQCD = 0.
             else:
-                if self.hasParticleNetProb:
+                if self.hasParticleNetProb: ## nano AOD version before v12
                     j.pn_Xbb = j.ParticleNetMD_probXbb
                     j.pn_Xcc = j.ParticleNetMD_probXcc
                     j.pn_Xqq = j.ParticleNetMD_probXqq
@@ -679,7 +694,7 @@ class HeavyFlavBaseProducer(Module, object):
                     j.pn_XttVsQCD = 0.
                     j.pn_XtmVsQCD = 0.
                     j.pn_XteVsQCD = 0.
-                else: ## for nanoAOD v12
+                else: ## for nanoAOD v12 or higher
                     j.pn_Xbb = 0
                     j.pn_Xcc = 0
                     j.pn_Xqq = 0
@@ -695,7 +710,6 @@ class HeavyFlavBaseProducer(Module, object):
                     j.pn_XttVsQCD = j.particleNet_XttVsQCD
                     j.pn_XtmVsQCD = j.particleNet_XtmVsQCD
                     j.pn_XteVsQCD = j.particleNet_XteVsQCD
-                    
 
     def evalMassRegression(self, event, jets):
         for j in jets:
@@ -901,6 +915,69 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "ParticleNet_massCorr", fj.particleNet_massCorr)
             except RuntimeError:
                 self.out.fillBranch(prefix + "ParticleNet_massCorr", -1)
+
+            ## GloParT V3            
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xbb", fj.globalParT3_Xbb)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xbb", -1)                
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xcc", fj.globalParT3_Xcc)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xcc", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xcs", fj.globalParT3_Xcs)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xcs", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xqq", fj.globalParT3_Xqq)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xqq", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtaue", fj.globalParT3_Xtauhtaue)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtaue", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtaum", fj.globalParT3_Xtauhtaum)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtaum", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtauh", fj.globalParT3_Xtauhtauh)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_Xtauhtauh", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWqq", fj.globalParT3_TopbWqq)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWqq", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWq", fj.globalParT3_TopbWq)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWq", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWev", fj.globalParT3_TopbWev)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWev", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWmv", fj.globalParT3_TopbWmv)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWmv", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWtauhv", fj.globalParT3_TopbWtauhv)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_TopbWtauhv", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_QCD", fj.globalParT3_QCD)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_QCD", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_massCorr", fj.globalParT3_massCorrX2p)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_massCorr", -1)
+            try:
+                self.out.fillBranch(prefix + "GlobalParT3_massCorrGen", fj.globalParT3_massCorrGeneric)
+            except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_massCorrGen", -1)
+
             try:
                 self.out.fillBranch(prefix + "btagDDBvLV2", fj.btagDDBvLV2)
                 self.out.fillBranch(prefix + "btagDDCvBV2", fj.btagDDCvBV2)

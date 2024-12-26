@@ -196,6 +196,10 @@ class MuTaggedSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def MuTaggedTree_2016(): return MuTaggedSampleProducer(year=2016)
-def MuTaggedTree_2017(): return MuTaggedSampleProducer(year=2017)
-def MuTaggedTree_2018(): return MuTaggedSampleProducer(year=2018)
+def MuTaggedTree_2016(): return MuTaggedSampleProducer(year='2016')
+def MuTaggedTree_2017(): return MuTaggedSampleProducer(year='2017')
+def MuTaggedTree_2018(): return MuTaggedSampleProducer(year='2018')
+def MuTaggedTree_2022preEE(): return MuTaggedSampleProducer(year='2022preEE')
+def MuTaggedTree_2022postEE(): return MuTaggedSampleProducer(year='2022postEE')
+def MuTaggedTree_2023preBPIX(): return MuTaggedSampleProducer(year='2023preBPIX')
+def MuTaggedTree_2023postBPIX(): return MuTaggedSampleProducer(year='2023postBPIX')

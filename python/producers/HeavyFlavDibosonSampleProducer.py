@@ -135,6 +135,10 @@ class DibosonSampleProducer(HeavyFlavBaseProducer):
 
 
 # define modules using the syntax 'name = lambda : constructor' to avoid having them loaded when not needed
-def DibosonTree_2016(): return DibosonSampleProducer(year=2016)
-def DibosonTree_2017(): return DibosonSampleProducer(year=2017)
-def DibosonTree_2018(): return DibosonSampleProducer(year=2018)
+def DibosonTree_2016(): return DibosonSampleProducer(year='2016')
+def DibosonTree_2017(): return DibosonSampleProducer(year='2017')
+def DibosonTree_2018(): return DibosonSampleProducer(year='2018')
+def DibosonTree_2022preEE(): return DibosonSampleProducer(year='2022preEE')
+def DibosonTree_2022postEE(): return DibosonSampleProducer(year='2022postEE')
+def DibosonTree_2023preBPIX(): return DibosonSampleProducer(year='2023preBPIX')
+def DibosonTree_2023postBPIX(): return DibosonSampleProducer(year='2023postBPIX')
