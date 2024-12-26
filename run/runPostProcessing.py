@@ -517,7 +517,6 @@ queue jobid from {jobids_file}
 def run_add_weight(args):
     if args.weight_file:
         xsec_dict = parse_sample_xsec(args.weight_file)
-
     import subprocess
     md = load_metadata(args)
     parts_dir = os.path.join(args.outputdir, 'parts')
