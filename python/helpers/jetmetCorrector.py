@@ -1,3 +1,4 @@
+
 import os
 import tempfile
 import shutil
@@ -8,7 +9,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 from .utils import polarP4, p4, configLogger
-from .jetSmearingHelper import jetSmearer, find_and_extract_tarball
+from .jetSmearingHelper import jetSmearer, find_and_extract_tarball, find_and_extract_vetomap
 
 logger = logging.getLogger('jme')
 configLogger('jme', loglevel=logging.INFO)
@@ -119,6 +120,7 @@ class JetMETCorrector(object):
                 (272007, 'Summer19UL16APV_RunBCD_V7_DATA'),
                 (276831, 'Summer19UL16APV_RunEF_V7_DATA'),
             )
+            self.jetvetomapTag = ''
         elif self.year == '2016':
             # hack, actually UL2016 postVFP
             self.globalTag = 'Summer19UL16_V7_MC'
@@ -129,6 +131,7 @@ class JetMETCorrector(object):
                 # (start run number (inclusive), 'tag name')
                 (277772, 'Summer19UL16_RunFGH_V7_DATA'),
             )
+            self.jetvetomapTag = ''
         elif self.year == '2017':
             self.globalTag = 'Summer19UL17_V6_MC'
             self.jerTag = 'Summer19UL17_JRV2_MC'
@@ -142,6 +145,7 @@ class JetMETCorrector(object):
                 (303435, 'Summer19UL17_RunE_V6_DATA'),
                 (304911, 'Summer19UL17_RunF_V6_DATA'),
             )
+            self.jetvetomapTag = ''
         elif self.year == '2018':
             self.globalTag = 'Summer19UL18_V5_MC'
             self.jerTag = 'Summer19UL18_JRV2_MC'
@@ -154,6 +158,7 @@ class JetMETCorrector(object):
                 (319313, 'Summer19UL18_RunC_V5_DATA'),
                 (320394, 'Summer19UL18_RunD_V5_DATA'),
             )
+            self.jetvetomapTag = ''
         elif self.year == '2022preEE':
             self.globalTag = 'Summer22_22Sep2023_V2_MC'
             self.jerTag = 'Summer22_22Sep2023_JRV1_MC'
@@ -161,6 +166,7 @@ class JetMETCorrector(object):
                 # set the name of the tarball with a dummy run number
                 (0, 'Summer22_22Sep2023_RunCD_V2_DATA'),
             )
+            self.jetvetomapTag = 'Summer22_23Sep2023_RunCD_v1'            
         elif self.year == '2022postEE':
             self.globalTag = 'Summer22EE_22Sep2023_V2_MC'
             self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
@@ -170,6 +176,7 @@ class JetMETCorrector(object):
                 (360381, 'Summer22EE_22Sep2023_RunF_V2_DATA'),
                 (362365, 'Summer22EE_22Sep2023_RunG_V2_DATA'),
             )
+            self.jetvetomapTag = 'Summer22EE_23Sep2023_RunEFG_v1'
         elif self.year == '2023preBPIX':
             self.globalTag = 'Summer23Prompt23_V1_MC'
             self.jerTag = 'Summer23Prompt23_RunCv1234_JRV1_MC'
@@ -178,6 +185,7 @@ class JetMETCorrector(object):
                 (366442, 'Summer23Prompt23_RunCv123_V1_DATA'),
                 (367758, 'Summer23Prompt23_RunCv4_V1_DATA'),
             )
+            self.jetvetomapTag = 'Summer23Prompt23_RunC_v1'
         elif self.year == '2023postBPIX':
             self.globalTag = 'Summer23BPixPrompt23_V1_MC'
             self.jerTag = 'Summer23BPixPrompt23_RunD_JRV1_MC'
@@ -185,6 +193,7 @@ class JetMETCorrector(object):
                 # set the name of the tarball with a dummy run number
                 (367770, 'Summer23BPixPrompt23_RunD_V1_DATA'),
             )
+            self.jetvetomapTag = 'Summer23BPixPrompt23_RunD_v1'
         else:
             raise RuntimeError('Invalid year: %s' % (str(self.year)))
 
@@ -235,6 +244,13 @@ class JetMETCorrector(object):
             self.jetSmearer = jetSmearer(self.jerTag, jetType=self.jetType)
             self.jetSmearer.beginJob()
 
+        ## take the jet veto map
+        jetvetomap_path = find_and_extract_vetomap(self.jetvetomapTag)
+        if jetvetomap_path:
+            self.f_jetvetomap = ROOT.TFile(jetvetomap_path,'READ');
+            self.h_jetvetomap = self.f_jetvetomap.Get("jetvetomap");
+            self.h_jetvetomap_bpix = self.f_jetvetomap.Get("jetvetomap_bpix");
+                
     def endJob(self):
         shutil.rmtree(self.jerInputFilePath)
 
@@ -277,7 +293,7 @@ class JetMETCorrector(object):
         return np.array([delta.px(), delta.py()])
 
     def correctJetAndMET(self, jets, lowPtJets=None, met=None, rawMET=None, defaultMET=None,
-                         rho=None, genjets=[], isMC=True, runNumber=None):
+                         rho=None, genjets=[], isMC=True, runNumber=None, applyVetoMap=False):
         assert (not isMC) or (self.jesr_extra_br and (self.jer == 'nominal' and self.jes == None)), "Must run jesr_extra_br=True in nominal."
 
         # for MET correction, use 'Jet' (corr_pt>15) and 'CorrT1METJet' (corr_pt<15) collections
@@ -358,6 +374,22 @@ class JetMETCorrector(object):
             if met is not None:
                 j._t1MetDelta = self.calcT1Corr(j) + self.calcT1CorrEEFix(j)
 
+        ## jet veto map
+        if applyVetoMap:
+            for j in jets:
+                j.passvetomap = 1
+                if j.pt > 15 and (j.jetId & 2) and (j.chEmEF+j.neEmEF)<0.9 and j.nMuons == 0:
+                    if self.h_jetvetomap:
+                        bin_eta = self.h_jetvetomap.GetXaxis().FindBin(j.eta);
+                        bin_phi = self.h_jetvetomap.GetYaxis().FindBin(j.phi);
+                        if self.h_jetvetomap.GetBinContent(bin_eta,bin_phi) > 0:
+                            j.passvetomap = 0
+                    if self.h_jetvetomap_bpix:
+                        bin_eta = self.h_jetvetomap.GetXaxis().FindBin(j.eta);
+                        bin_phi = self.h_jetvetomap.GetYaxis().FindBin(j.phi);
+                        if self.h_jetvetomap_bpix.GetBinContent(bin_eta,bin_phi) > 0:
+                            j.passvetomap = 0
+                            
         # correct MET
         if met is not None:
             met_shift = sum([j._t1MetDelta for j in itertools.chain(jets, lowPtJets)])

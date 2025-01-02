@@ -24,6 +24,15 @@ def find_and_extract_tarball(name, destination, copy_txt_with_prefix=None):
                 print('... extracted %s to %s' % (fullpath, destination))
                 return fullpath
 
+def find_and_extract_vetomap(name):
+    search_pathes = [os.environ['CMSSW_BASE'] + '/src/PhysicsTools/NanoHRTTools/data/jme/',
+                     os.environ['CMSSW_BASE'] + '/src/PhysicsTools/NanoAODTools/data/jme/']
+    for p in search_pathes:
+        for ext in ['.root']:
+            fullpath = os.path.join(p,name+ext)
+            if os.path.exists(fullpath): 
+                print('... root file with veto map present in %s' % (fullpath))
+                return fullpath
 
 def match(jet, genjets, resolution, dr2cut=0.04, dptcut=3):
     # Try to find a gen jet matching

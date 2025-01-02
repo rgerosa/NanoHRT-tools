@@ -158,6 +158,7 @@ class HeavyFlavBaseProducer(Module, object):
         self.out.branch("lumiwgt", "F")
         self.out.branch("jetR", "F")
         self.out.branch("passmetfilters", "O")
+        self.out.branch("passjetvetomap", "O")
         self.out.branch("l1PreFiringWeight", "F")
         self.out.branch("l1PreFiringWeightUp", "F")
         self.out.branch("l1PreFiringWeightDown", "F")
@@ -433,19 +434,19 @@ class HeavyFlavBaseProducer(Module, object):
                                              met=event.met, rawMET=METObject(event, "RawMET"),
                                              defaultMET=METObject(event, "MET"),
                                              rho=rho, genjets=Collection(event, 'GenJet') if self.isMC else None,
-                                             isMC=self.isMC, runNumber=event.run)
+                                             isMC=self.isMC, runNumber=event.run, applyVetoMap=True)
             event._allJets = sorted(event._allJets, key=lambda x: x.pt, reverse=True)  # sort by pt after updating
 
             # correct fatjets
             self.fatjetCorr.setSeed(rndSeed(event, event._allFatJets))
             self.fatjetCorr.correctJetAndMET(jets=event._allFatJets, met=None, rho=rho,
                                              genjets=Collection(event, self._fj_gen_name) if self.isMC else None,
-                                             isMC=self.isMC, runNumber=event.run)
+                                             isMC=self.isMC, runNumber=event.run, applyVetoMap=False)
             # correct subjets
             self.subjetCorr.setSeed(rndSeed(event, event.subjets))
             self.subjetCorr.correctJetAndMET(jets=event.subjets, met=None, rho=rho,
                                              genjets=Collection(event, self._sj_gen_name) if self.isMC else None,
-                                             isMC=self.isMC, runNumber=event.run)
+                                             isMC=self.isMC, runNumber=event.run, applyVetoMap=False)
 
         # jet mass resolution smearing
         if self.isMC and self._jmeSysts['jmr']:
@@ -459,6 +460,11 @@ class HeavyFlavBaseProducer(Module, object):
             fj.msoftdrop = sumP4(*fj.subjets).M()
         event._allFatJets = sorted(event._allFatJets, key=lambda x: x.pt, reverse=True)  # sort by pt
 
+        # oass the jet veto map
+        event.passjetvetomap = True;
+        for idx, j in enumerate(event._allJets):
+            event.passjetvetomap = event.passjetvetomap*j.passvetomap
+            
         # select lepton-cleaned jets
         if self._doJetCleaning:
             event.fatjets = [fj for fj in event._allFatJets if fj.pt > 200 and abs(fj.eta) < 2.4 and (
@@ -727,19 +733,32 @@ class HeavyFlavBaseProducer(Module, object):
         self.out.fillBranch("year", year_dict[self.year])
         self.out.fillBranch("lumiwgt", lumi_dict[self.year])
 
-        met_filters = bool(
-            event.Flag_goodVertices and
-            event.Flag_globalSuperTightHalo2016Filter and
-            event.Flag_HBHENoiseFilter and
-            event.Flag_HBHENoiseIsoFilter and
-            event.Flag_EcalDeadCellTriggerPrimitiveFilter and
-            event.Flag_BadPFMuonFilter and
-            event.Flag_BadPFMuonDzFilter and
-            event.Flag_eeBadScFilter
-        )
-        if self.year in ('2017', '2018'):
-            met_filters = met_filters and event.Flag_ecalBadCalibFilter
+        if self.year in ('2015', '2016', '2017', '2018'):
+            met_filters = bool(
+                event.Flag_goodVertices and
+                event.Flag_globalSuperTightHalo2016Filter and
+                event.Flag_HBHENoiseFilter and
+                event.Flag_HBHENoiseIsoFilter and
+                event.Flag_EcalDeadCellTriggerPrimitiveFilter and
+                event.Flag_BadPFMuonFilter and
+                event.Flag_BadPFMuonDzFilter and
+                event.Flag_eeBadScFilter
+            )
+            if self.year in ('2017', '2018'):
+                met_filters = met_filters and event.Flag_ecalBadCalibFilter
+        else:
+            met_filters = bool(
+                event.Flag_goodVertices and
+                event.Flag_globalSuperTightHalo2016Filter and
+                event.Flag_EcalDeadCellTriggerPrimitiveFilter and
+                event.Flag_BadPFMuonFilter and
+                event.Flag_BadPFMuonDzFilter and
+                event.Flag_eeBadScFilter and
+                event.Flag_hfNoisyHitsFilter
+            )
+                
         self.out.fillBranch("passmetfilters", met_filters)
+        self.out.fillBranch("passjetvetomap", event.passjetvetomap)
 
         # L1 prefire weights
         if self.year in ('2015','2016','2017'):
