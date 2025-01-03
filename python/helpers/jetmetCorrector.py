@@ -219,7 +219,7 @@ class JetMETCorrector(object):
             self.jetCorrectorsDATA = {}
             for iov, tag in self.dataTags:
                 find_and_extract_tarball(tag, self.jesInputFilePath)
-                if iov > 0:
+                if iov >= 0:
                     self.jetCorrectorsDATA[tag] = JetCorrector(globalTag=tag,
                                                                jetType=self.jetType,
                                                                jecPath=self.jesInputFilePath,
