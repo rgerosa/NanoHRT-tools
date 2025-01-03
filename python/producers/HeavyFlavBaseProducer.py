@@ -180,8 +180,10 @@ class HeavyFlavBaseProducer(Module, object):
             # fatjet kinematics
             self.out.branch(prefix + "is_qualified", "O")
             self.out.branch(prefix + "pt", "F")
+            self.out.branch(prefix + "rawpt", "F")
             self.out.branch(prefix + "eta", "F")
             self.out.branch(prefix + "phi", "F")
+            self.out.branch(prefix + "mass", "F")
             self.out.branch(prefix + "rawmass", "F")
             self.out.branch(prefix + "sdmass", "F")
             self.out.branch(prefix + "regressed_mass", "F")
@@ -192,13 +194,17 @@ class HeavyFlavBaseProducer(Module, object):
             # subjets
             self.out.branch(prefix + "deltaR_sj12", "F")
             self.out.branch(prefix + "sj1_pt", "F")
+            self.out.branch(prefix + "sj1_rawpt", "F")
             self.out.branch(prefix + "sj1_eta", "F")
             self.out.branch(prefix + "sj1_phi", "F")
+            self.out.branch(prefix + "sj1_mass", "F")
             self.out.branch(prefix + "sj1_rawmass", "F")
             self.out.branch(prefix + "sj1_btagdeepcsv", "F")
             self.out.branch(prefix + "sj2_pt", "F")
+            self.out.branch(prefix + "sj2_rawpt", "F")
             self.out.branch(prefix + "sj2_eta", "F")
             self.out.branch(prefix + "sj2_phi", "F")
+            self.out.branch(prefix + "sj2_mass", "F")
             self.out.branch(prefix + "sj2_rawmass", "F")
             self.out.branch(prefix + "sj2_btagdeepcsv", "F")
 
@@ -799,13 +805,14 @@ class HeavyFlavBaseProducer(Module, object):
                 continue
 
             fj = fatjets[idx - 1]
-
             # fatjet kinematics
             self.out.fillBranch(prefix + "is_qualified", fj.is_qualified)
             self.out.fillBranch(prefix + "pt", fj.pt)
+            self.out.fillBranch(prefix + "rawpt", fj.pt*(1.-fj.rawFactor))
             self.out.fillBranch(prefix + "eta", fj.eta)
             self.out.fillBranch(prefix + "phi", fj.phi)
-            self.out.fillBranch(prefix + "rawmass", fj.mass)
+            self.out.fillBranch(prefix + "mass", fj.mass)
+            self.out.fillBranch(prefix + "rawmass", fj.mass*(1.-fj.rawFactor))
             self.out.fillBranch(prefix + "sdmass", fj.msoftdrop)
             self.out.fillBranch(prefix + "regressed_mass", fj.regressed_mass)
             self.out.fillBranch(prefix + "tau21", fj.tau2 / fj.tau1 if fj.tau1 > 0 else 99)
@@ -820,9 +827,11 @@ class HeavyFlavBaseProducer(Module, object):
             for idx_sj, sj in enumerate(fj.subjets):
                 prefix_sj = prefix + 'sj%d_' % (idx_sj + 1)
                 self.out.fillBranch(prefix_sj + "pt", sj.pt)
+                self.out.fillBranch(prefix_sj + "rawpt", sj.pt*(1.-sj.rawFactor))
                 self.out.fillBranch(prefix_sj + "eta", sj.eta)
                 self.out.fillBranch(prefix_sj + "phi", sj.phi)
-                self.out.fillBranch(prefix_sj + "rawmass", sj.mass)
+                self.out.fillBranch(prefix_sj + "mass", sj.mass)
+                self.out.fillBranch(prefix_sj + "rawmass", sj.mass*(1.-sj.rawFactor))
                 try:
                     self.out.fillBranch(prefix_sj + "btagdeepcsv", sj.btagDeepB)
                 except RuntimeError:

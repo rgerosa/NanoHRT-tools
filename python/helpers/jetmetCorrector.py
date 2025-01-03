@@ -58,7 +58,7 @@ class JetCorrector(object):
         try:
             self.corrector.setJetA(jet.area)
         except RuntimeError:
-            pass
+            self.corrector.setJetA(0.5)
         if level is None:
             return self.corrector.getCorrection()
         else:
@@ -166,7 +166,7 @@ class JetMETCorrector(object):
                 # set the name of the tarball with a dummy run number
                 (0, 'Summer22_22Sep2023_RunCD_V2_DATA'),
             )
-            self.jetvetomapTag = 'Summer22_23Sep2023_RunCD_v1'            
+            self.jetvetomapTag = 'Summer22_23Sep2023_RunCD_v1'
         elif self.year == '2022postEE':
             self.globalTag = 'Summer22EE_22Sep2023_V2_MC'
             self.jerTag = 'Summer22EE_22Sep2023_JRV1_MC'
@@ -198,7 +198,8 @@ class JetMETCorrector(object):
             raise RuntimeError('Invalid year: %s' % (str(self.year)))
 
     def beginJob(self):
-        # set up JEC
+
+        # set up nominal JEC
         if self.jec or self.jes in ['up', 'down'] or self.correctMET or self.jesr_extra_br:
             for library in ["libCondFormatsJetMETObjects", "libPhysicsToolsNanoAODTools"]:
                 if library not in ROOT.gSystem.GetLibraries():
@@ -294,10 +295,10 @@ class JetMETCorrector(object):
 
     def correctJetAndMET(self, jets, lowPtJets=None, met=None, rawMET=None, defaultMET=None,
                          rho=None, genjets=[], isMC=True, runNumber=None, applyVetoMap=False):
-        assert (not isMC) or (self.jesr_extra_br and (self.jer == 'nominal' and self.jes == None)), "Must run jesr_extra_br=True in nominal."
-
+        
         # for MET correction, use 'Jet' (corr_pt>15) and 'CorrT1METJet' (corr_pt<15) collections
         # Type-1 MET correction: https://github.com/cms-sw/cmssw/blob/master/JetMETCorrections/Type1MET/interface/PFJetMETcorrInputProducerT.h
+        
         if met is None:
             lowPtJets = []
         else:
@@ -308,7 +309,6 @@ class JetMETCorrector(object):
                 j.neEmEF = j.chEmEF = 0
 
         for j in itertools.chain(jets, lowPtJets):
-            # set JEC factor ( = corrPt / rawPt)
             j.rawP4 = polarP4(j) * (1. - j.rawFactor)
             j._jecFactor = None
             j._jecFactorL1 = None
@@ -328,7 +328,7 @@ class JetMETCorrector(object):
             # set JER factor
             j._smearFactorNominal = 1
             j._smearFactor = 1
-            if isMC and (self.jer is not None or self.self.jesr_extra_br):
+            if isMC and (self.jer is not None or self.jesr_extra_br):
                 jerFactors = self.jetSmearer.getSmearValsPt(j, genjets, rho)
                 j._smearFactorNominal = _sf(jerFactors)
                 j._smearFactor = _sf(jerFactors, self.jer)

@@ -23,25 +23,26 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         if len(event.fatjets) < 2:
             return False
+
+        self.selectSV(event)
+        if self._requireSvCut and len(event.secondary_vertices) < 2:
+            return False
+
         probe_jets = event.fatjets[:2]
+        for fj in probe_jets:
+            if not (len(fj.subjets) == 2 and fj.mass*(1.-fj.rawFactor)*fj.globalParT3_massCorrX2p > 50 and fj.mass*(1.-fj.rawFactor)*fj.globalParT3_massCorrX2p < 200):
+                fj.is_qualified = False
+                continue
 
-        if self._opts['sfbdt_threshold'] > -99:
-            self.selectSV(event)
-            if self._requireSvCut and len(event.secondary_vertices) < 2:
-                return False
+            self.matchSVToFatJets(event, [fj])
 
-            for fj in probe_jets:
-                if not (len(fj.subjets) == 2 and fj.msoftdrop > 50 and fj.msoftdrop < 200):
-                    fj.is_qualified = False
-                    continue
-
-                self.matchSVToFatJets(event, [fj])
+            if self._opts['sfbdt_threshold'] > -99:
                 if fj.sfBDT < self._opts['sfbdt_threshold']:
                     fj.is_qualified = False
                     continue
-
-            if probe_jets[0].is_qualified is False and probe_jets[1].is_qualified is False:
-                return False
+                
+        if probe_jets[0].is_qualified is False and probe_jets[1].is_qualified is False:
+            return False
 
         self.loadGenHistory(event, probe_jets)
         self.evalTagger(event, probe_jets)
