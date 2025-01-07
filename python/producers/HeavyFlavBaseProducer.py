@@ -262,6 +262,8 @@ class HeavyFlavBaseProducer(Module, object):
             self.out.branch(prefix + "GlobalParT3_QCD", "F")
             self.out.branch(prefix + "GlobalParT3_massCorr", "F")
             self.out.branch(prefix + "GlobalParT3_massCorrGen", "F")
+            self.out.branch(prefix + "GlobalParT3_mass", "F")
+            self.out.branch(prefix + "GlobalParT3_massGen", "F")
             
             # Additional tagger scores from NanoAODv9
             self.out.branch(prefix + "DeepAK8MD_HbbvsQCD", "F")
@@ -999,11 +1001,15 @@ class HeavyFlavBaseProducer(Module, object):
                 self.out.fillBranch(prefix + "GlobalParT3_QCD", -1)
             try:
                 self.out.fillBranch(prefix + "GlobalParT3_massCorr", fj.globalParT3_massCorrX2p)
+                self.out.fillBranch(prefix + "GlobalParT3_mass", fj.globalParT3_massCorrX2p*fj.mass*(1.-fj.rawFactor))                
             except RuntimeError:
                 self.out.fillBranch(prefix + "GlobalParT3_massCorr", -1)
+                self.out.fillBranch(prefix + "GlobalParT3_mass", -1)
             try:
                 self.out.fillBranch(prefix + "GlobalParT3_massCorrGen", fj.globalParT3_massCorrGeneric)
+                self.out.fillBranch(prefix + "GlobalParT3_massGen", fj.globalParT3_massCorrGeneric*fj.mass*(1.-fj.rawFactor))
             except RuntimeError:
+                self.out.fillBranch(prefix + "GlobalParT3_massGen", -1)
                 self.out.fillBranch(prefix + "GlobalParT3_massCorrGen", -1)
 
             try:

@@ -520,7 +520,7 @@ def run_add_weight(args):
     import subprocess
     md = load_metadata(args)
     parts_dir = os.path.join(args.outputdir, 'parts')
-    status_file = os.path.join(parts_dir, '.success')
+    status_file = os.path.join(parts_dir, '.success')    
     if os.path.exists(status_file):
         return
     if not os.path.exists(parts_dir):
