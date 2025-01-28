@@ -74,8 +74,8 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'SubGenJetAK8'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train_qcd.model.%d' % idx)
-                for idx in range(10)]  # FIXME: update to AK8 training
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train.model.%d' % idx)
+                for idx in range(5)]  # FIXME: update to AK8 training
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
         elif self.jetType == 'ak15':
@@ -86,8 +86,8 @@ class HeavyFlavBaseProducer(Module, object):
             self._sj_gen_name = 'GenSubJetAK15'
             self._sfbdt_files = [
                 os.path.expandvars(
-                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train_qcd.model.%d' % idx)
-                for idx in range(10)]
+                    '$CMSSW_BASE/src/PhysicsTools/NanoHRTTools/data/sfBDT/ak8_ul/xgb_train.model.%d' % idx)
+                for idx in range(5)]
             self._sfbdt_vars = ['fj_2_tau21', 'fj_2_sj1_rawmass', 'fj_2_sj2_rawmass',
                                 'fj_2_ntracks_sv12', 'fj_2_sj1_sv1_pt', 'fj_2_sj2_sv1_pt']
         else:
@@ -546,7 +546,7 @@ class HeavyFlavBaseProducer(Module, object):
                         'fj_2_sj2_sv1_pt': sj2_sv.pt,
                     }
                     if hasattr(self, 'xgb'):
-                        fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 10))
+                        fj.sfBDT = self.xgb.eval(sfbdt_inputs, model_idx=(event.event % 5))
                     fj.sj12_masscor_dxysig = corrected_svmass(sj1_sv if sj1_sv.dxySig > sj2_sv.dxySig else sj2_sv)
 
     def loadGenHistory(self, event, fatjets):
