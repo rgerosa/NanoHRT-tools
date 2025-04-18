@@ -30,7 +30,9 @@ class QCDSampleProducer(HeavyFlavBaseProducer):
 
         probe_jets = event.fatjets[:2]
         for fj in probe_jets:
-            if not (len(fj.subjets) == 2 and fj.msoftdrop > 50 and fj.msoftdrop < 200):
+            m_reg = fj.globalParT3_massCorrX2p*fj.mass*(1.-fj.rawFactor)
+            if not (len(fj.subjets) == 2 and m_reg > 50 and m_reg < 200):
+            #if not (len(fj.subjets) == 2 and fj.msoftdrop > 50 and fj.msoftdrop < 200):
                 fj.is_qualified = False
                 continue
 

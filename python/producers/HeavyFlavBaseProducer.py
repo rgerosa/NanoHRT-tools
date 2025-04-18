@@ -617,10 +617,12 @@ class HeavyFlavBaseProducer(Module, object):
                     hadGenHs.append(gp)
 
         for parton in itertools.chain(lepGenTops, hadGenTops):
-            parton.daus = (parton.genB, genparts[parton.genW.dauIdx[0]], genparts[parton.genW.dauIdx[1]])
-            parton.genW.daus = parton.daus[1:]
+            if len(parton.genW.dauIdx) > 1:
+                parton.daus = (parton.genB, genparts[parton.genW.dauIdx[0]], genparts[parton.genW.dauIdx[1]])
+                parton.genW.daus = parton.daus[1:]
         for parton in itertools.chain(hadGenWs, hadGenZs, hadGenHs):
-            parton.daus = (genparts[parton.dauIdx[0]], genparts[parton.dauIdx[1]])
+            if len(parton.dauIdx) > 1:
+                parton.daus = (genparts[parton.dauIdx[0]], genparts[parton.dauIdx[1]])
 
         for fj in fatjets:
             fj.genH, fj.dr_H = closest(fj, hadGenHs)
@@ -1053,28 +1055,25 @@ class HeavyFlavBaseProducer(Module, object):
 
                 # info of the closest hadGenH
                 self.out.fillBranch(prefix + "dr_H", fj.dr_H)
-                self.out.fillBranch(prefix + "dr_H_daus",
-                                    max([deltaR(fj, dau) for dau in fj.genH.daus]) if fj.genH else 99)
+                self.out.fillBranch(prefix + "dr_H_daus", max([deltaR(fj, dau) for dau in fj.genH.daus]) if (fj.genH and len(fj.genH.daus)>0) else 99)
                 self.out.fillBranch(prefix + "H_pt", fj.genH.pt if fj.genH else -1)
-                self.out.fillBranch(prefix + "H_decay", abs(fj.genH.daus[0].pdgId) if fj.genH else 0)
+                self.out.fillBranch(prefix + "H_decay", abs(fj.genH.daus[0].pdgId) if (fj.genH and len(fj.genH.daus)>0) else 0)
 
                 # info of the closest hadGenZ
                 self.out.fillBranch(prefix + "dr_Z", fj.dr_Z)
-                self.out.fillBranch(prefix + "dr_Z_daus",
-                                    max([deltaR(fj, dau) for dau in fj.genZ.daus]) if fj.genZ else 99)
+                self.out.fillBranch(prefix + "dr_Z_daus",max([deltaR(fj, dau) for dau in fj.genZ.daus]) if (fj.genZ and len(fj.genZ.daus)>0) else 99)
                 self.out.fillBranch(prefix + "Z_pt", fj.genZ.pt if fj.genZ else -1)
-                self.out.fillBranch(prefix + "Z_decay", abs(fj.genZ.daus[0].pdgId) if fj.genZ else 0)
+                self.out.fillBranch(prefix + "Z_decay", abs(fj.genZ.daus[0].pdgId) if (fj.genZ and len(fj.genZ.daus)>0) else 0)
 
                 # info of the closest hadGenW
                 self.out.fillBranch(prefix + "dr_W", fj.dr_W)
-                self.out.fillBranch(prefix + "dr_W_daus",
-                                    max([deltaR(fj, dau) for dau in fj.genW.daus]) if fj.genW else 99)
+                self.out.fillBranch(prefix + "dr_W_daus", max([deltaR(fj, dau) for dau in fj.genW.daus]) if (fj.genW and len(fj.genW.daus)>0) else 99)
                 self.out.fillBranch(prefix + "W_pt", fj.genW.pt if fj.genW else -1)
-                self.out.fillBranch(prefix + "W_decay", max([abs(d.pdgId) for d in fj.genW.daus]) if fj.genW else 0)
+                self.out.fillBranch(prefix + "W_decay", max([abs(d.pdgId) for d in fj.genW.daus]) if (fj.genW and len(fj.genW.daus)>0) else 0)
 
                 # info of the closest hadGenTop
-                drwq1, drwq2 = [deltaR(fj, dau) for dau in fj.genT.genW.daus] if fj.genT else [99, 99]
-                wq1_pdgId, wq2_pdgId = [dau.pdgId for dau in fj.genT.genW.daus] if fj.genT else [0, 0]
+                drwq1, drwq2 = [deltaR(fj, dau) for dau in fj.genT.genW.daus] if (fj.genT and len(fj.genT.genW.daus)>0) else [99,99]
+                wq1_pdgId, wq2_pdgId = [dau.pdgId for dau in fj.genT.genW.daus] if (fj.genT and len(fj.genT.genW.daus)>0) else [0, 0]
                 if drwq1 < drwq2:
                     drwq1, drwq2 = drwq2, drwq1
                     wq1_pdgId, wq2_pdgId = wq2_pdgId, wq1_pdgId

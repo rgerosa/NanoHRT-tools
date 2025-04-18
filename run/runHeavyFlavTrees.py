@@ -24,7 +24,9 @@ default_config = {'sfbdt_threshold': -99,
                   'met_unclustered': None,
                   'smearMET': False,
                   'applyHEMUnc': False,
-                  'jesr_extra_br': True}
+                  'jesr_extra_br': True,
+                  'redirector': ""
+                  }
 
 cut_dict_ak8 = {
     'photon': 'Sum$(Photon_pt>200 && Photon_cutBased>=2 && Photon_electronVeto)>0 && Sum$(FatJet_pt>200 && abs(FatJet_eta)<2.5 && (FatJet_jetId & 2))>0',
@@ -75,7 +77,9 @@ def _process(args):
     default_config['channel'] = channel
     if channel in ('qcd', 'photon', 'higgs'):
         default_config['sfbdt_threshold'] = args.sfbdt
-
+    if args.redirector != '':
+        default_config['redirector'] = args.redirector
+        
     if year in ('2017', '2018'):
         args.weight_file = 'samples/xsec_2017.conf'
     if year in ('2022preEE', '2022postEE', '2023preBPIX', '2023postBPIX'):
@@ -220,6 +224,12 @@ def main():
                         action='store_true', default=False,
                         help='Run mass regression. Default: %(default)s'
                         )
+    parser.add_argument('--redirector',
+                        type=str,
+                        default='',
+                        help='Redirector XROOTD'
+                        )
+
 
     args = parser.parse_args()
 

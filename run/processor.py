@@ -14,7 +14,7 @@ import ROOT
 ROOT.PyConfig.IgnoreCommandLineOptions = True
 
 
-def xrd_prefix(filepaths):
+def xrd_prefix(filepaths,md):
     prefix = ''
     allow_prefetch = False
     if not isinstance(filepaths, (list, tuple)):
@@ -30,10 +30,12 @@ def xrd_prefix(filepaths):
         # remote file
         import socket
         host = socket.getfqdn()
-        if 'cern.ch' in host:
-            prefix = 'root://xrootd-cms.infn.it//'
+        if md['redirector'] != '':
+            prefix = md['redirector']
+        elif 'cern.ch' in host:
+            prefix = 'root://cms-xrd-global.cern.ch//'
         else:
-            prefix = 'root://cmsxrootd.fnal.gov//'
+            prefix = 'root://cms-xrd-global.cern.ch//'
         allow_prefetch = True
     expanded_paths = [(prefix + '/' + f if prefix else f) for f in filepaths]
     return expanded_paths, allow_prefetch
@@ -71,7 +73,7 @@ def main(args):
 
     # run postprocessor
     inputfiles = args.files if len(args.files) else md['jobs'][args.jobid]['inputfiles']
-    filepaths, allow_prefetch = xrd_prefix(inputfiles)
+    filepaths, allow_prefetch = xrd_prefix(inputfiles,md)
     print(filepaths)
     outputname = outputName(md, args.jobid)
     p = PostProcessor(outputDir='.',
@@ -107,7 +109,7 @@ def main(args):
     # stage out
     if md['outputdir'].startswith('/eos'):
         cmd = 'xrdcp --silent -p -f {outputname} {outputdir}/{outputname}'.format(
-            outputname=outputname, outputdir=xrd_prefix(md['joboutputdir'])[0][0])
+            outputname=outputname, outputdir=xrd_prefix(md['joboutputdir'],md)[0][0])
         print(cmd)
         success = False
         for count in range(args.max_retry):
